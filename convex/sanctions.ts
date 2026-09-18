@@ -3,6 +3,7 @@ import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { internalAction, internalMutation, mutation, type MutationCtx } from "./_generated/server";
 import { parseSanctionsDetail, parseSearchResults, pickBestMatch } from "./lib/sanctions";
+import { translateOffenses } from "./lib/translate";
 
 export const PORTAL_URL = "https://enlinea.indecopi.gob.pe/miraaquienlecompras/";
 
@@ -86,11 +87,14 @@ export const lookup = internalAction({
       const match = pickBestMatch(query, results)!;
       const detail = parseSanctionsDetail(await scrapePortal(match.ruc, true));
       if (!detail) throw new Error("Detail page could not be read");
+      const labels = await translateOffenses(detail.recent.map((s) => s.offense));
+      const recent = detail.recent.map((s, i) => ({ ...s, offenseEn: labels[i] }));
       await ctx.runMutation(internal.sanctions.saveResult, {
         claimId,
         status: "found",
         ruc: match.ruc,
         ...detail,
+        recent,
         candidates: results.slice(0, 5),
         complaintHandlingCount: detail.recent.filter((s) => s.offense.includes("ATENCION DE RECLAMOS")).length,
       });
@@ -124,6 +128,7 @@ export const saveResult = internalMutation({
           resolution: v.string(),
           finalDate: v.string(),
           fineUit: v.number(),
+          offenseEn: v.optional(v.string()),
         }),
       ),
     ),

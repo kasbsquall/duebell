@@ -26,16 +26,22 @@
   text-decoration: none;
 }
 
-.wordmark span {
-  font-family: var(--font-mono);
-  font-weight: 400;
-  font-size: 0.72em;
-  letter-spacing: 0;
-  margin-left: var(--s-2);
-  color: var(--ink-3);
+.wordmark__lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.wordmark__text {
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 1;
 }
 
 .masthead__tag {
+  max-width: 44ch;
+  text-align: right;
   font-size: var(--text-sm);
   color: var(--ink-2);
 }
@@ -590,6 +596,11 @@
   line-height: 1.3;
 }
 
+.record__gloss {
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+}
+
 .record__who {
   font-size: var(--text-xs);
   color: var(--ink-2);
@@ -648,8 +659,18 @@
 }
 
 .verdict--empty {
+  position: relative;
   align-items: flex-start;
   color: var(--ink-3);
+  overflow: hidden;
+}
+
+.verdict__watermark {
+  position: absolute;
+  right: -18px;
+  bottom: -22px;
+  opacity: 0.06;
+  pointer-events: none;
 }
 
 .verdict__reading {
@@ -806,9 +827,44 @@
   font-size: var(--text-sm);
 }
 
-.next__draft {
+.next__draftbox {
   grid-column: 2;
   grid-row: 1 / span 4;
+  display: grid;
+  gap: var(--s-2);
+  align-content: start;
+}
+
+.next__langs {
+  display: flex;
+  gap: var(--s-1);
+}
+
+.next__langs button {
+  font: inherit;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  padding: var(--s-2) var(--s-3);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background-color 160ms var(--ease-out), color 160ms var(--ease-out);
+}
+
+.next__langs button:hover {
+  background: var(--paper-sunk);
+  color: var(--ink);
+}
+
+.next__langs button.is-on {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper-raised);
+}
+
+.next__draft {
   margin: 0;
   padding: var(--s-4);
   background: var(--paper-sunk);
@@ -927,7 +983,7 @@
     grid-template-columns: 1fr;
   }
 
-  .next__draft {
+  .next__draftbox {
     grid-column: 1;
     grid-row: auto;
   }
@@ -938,9 +994,13 @@
     padding: var(--s-4) 16px var(--s-6);
   }
 
+  .masthead__tag {
+    text-align: left;
+  }
+
   .masthead {
     flex-direction: column;
-    gap: var(--s-1);
+    gap: var(--s-2);
     margin-bottom: var(--s-5);
   }
 

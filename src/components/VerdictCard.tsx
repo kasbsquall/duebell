@@ -1,5 +1,6 @@
 import { CheckCircle, Hourglass, Quotes, WarningDiamond } from "@phosphor-icons/react";
 import type { ClaimEvent } from "../lib/format";
+import { BellMark } from "./Logo";
 
 const VERDICT_COPY = {
   commitment: { label: "Real commitment", Icon: CheckCircle, tone: "kept" },
@@ -27,6 +28,7 @@ export function VerdictCard({ classification, reply, isClassifying }: VerdictCar
         <p className="eyebrow">Latest reply</p>
         <Hourglass size={28} weight="light" aria-hidden />
         <p className="muted">No reply yet. Replies sent to this claim's address appear here within seconds.</p>
+        <BellMark size={180} className="verdict__watermark" />
       </section>
     );
   }

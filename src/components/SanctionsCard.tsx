@@ -16,7 +16,7 @@ export function SanctionsCard({ claim }: SanctionsCardProps) {
   return (
     <section className="panel record" aria-labelledby="record-heading">
       <p className="eyebrow" id="record-heading">
-        <Scales size={14} weight="light" aria-hidden /> Track record at Indecopi
+        <Scales size={14} weight="light" aria-hidden /> Past sanctions · Indecopi
       </p>
 
       {!record && (
@@ -30,7 +30,7 @@ export function SanctionsCard({ claim }: SanctionsCardProps) {
 
       {record?.status === "pending" && (
         <div aria-busy="true">
-          <p className="muted">Checking Peru's consumer agency for past sanctions…</p>
+          <p className="muted">Checking Indecopi, Peru's consumer protection agency, for past sanctions…</p>
           <div className="skeleton skeleton--block" />
         </div>
       )}
@@ -59,6 +59,8 @@ export function SanctionsCard({ claim }: SanctionsCardProps) {
                 {record.totalFineUit?.toFixed(2)} UIT
               </span>{" "}
               in fines
+              <br />
+              <span className="record__gloss">UIT is Peru's official fine unit</span>
             </span>
           </div>
           <p className="record__who">
@@ -76,7 +78,7 @@ export function SanctionsCard({ claim }: SanctionsCardProps) {
             {record.recent?.slice(0, 3).map((s) => (
               <li key={s.resolution} style={{ "--i": 0 } as React.CSSProperties}>
                 <span className="num muted">{s.finalDate}</span>
-                <span>{s.offense.toLowerCase()}</span>
+                <span>{s.offenseEn ?? s.offense.toLowerCase()}</span>
               </li>
             ))}
           </ul>
@@ -98,7 +100,7 @@ export function SanctionsCard({ claim }: SanctionsCardProps) {
           )}
 
           <a className="link" href={PORTAL_URL} target="_blank" rel="noopener noreferrer">
-            Source: Indecopi, “Mira a quién le compras” · last 4 years
+            Source: Indecopi public sanctions registry · last 4 years
             <ArrowSquareOut size={14} weight="light" aria-hidden />
           </a>
         </>

@@ -6,7 +6,7 @@ import type { Id } from "../../convex/_generated/dataModel";
 
 const DEMO_CLAIM = {
   companyName: "Saga Falabella",
-  summary: "I returned a jacket on September 2 and the S/ 389 refund never reached my card.",
+  summary: "I returned a jacket on September 2 and the PEN 389 refund never reached my card.",
 };
 
 interface NewClaimProps {
@@ -52,9 +52,10 @@ export function NewClaim({ onCreated }: NewClaimProps) {
           We keep the clock.
         </h1>
         <p className="intro__lede">
-          File your complaint in the company's complaint book with our address as your contact. We
-          count the legal deadline, read every reply, tell you when it is a non-answer, and draft
-          your Indecopi filing when they stall.
+          File your complaint in the company's official complaint book (the Libro de Reclamaciones)
+          with our address as your contact. We count the legal deadline, read every reply, tell you
+          when it is a non-answer, and draft your case for Indecopi, Peru's consumer protection
+          agency, when they stall.
         </p>
         <button className="btn btn--quiet" onClick={() => void submit(DEMO_CLAIM)} disabled={pending}>
           <Sparkle size={16} weight="light" aria-hidden />

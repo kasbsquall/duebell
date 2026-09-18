@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as admin from "../admin.js";
 import type * as claims from "../claims.js";
 import type * as classify from "../classify.js";
 import type * as config from "../config.js";
@@ -17,6 +18,7 @@ import type * as lib_businessDays from "../lib/businessDays.js";
 import type * as lib_classification from "../lib/classification.js";
 import type * as lib_reference from "../lib/reference.js";
 import type * as lib_sanctions from "../lib/sanctions.js";
+import type * as lib_translate from "../lib/translate.js";
 import type * as sanctions from "../sanctions.js";
 
 import type {
@@ -26,6 +28,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  admin: typeof admin;
   claims: typeof claims;
   classify: typeof classify;
   config: typeof config;
@@ -35,6 +38,7 @@ declare const fullApi: ApiFromModules<{
   "lib/classification": typeof lib_classification;
   "lib/reference": typeof lib_reference;
   "lib/sanctions": typeof lib_sanctions;
+  "lib/translate": typeof lib_translate;
   sanctions: typeof sanctions;
 }>;
 

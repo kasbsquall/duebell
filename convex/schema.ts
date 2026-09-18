@@ -38,6 +38,7 @@ export default defineSchema({
           resolution: v.string(),
           finalDate: v.string(),
           fineUit: v.number(),
+          offenseEn: v.optional(v.string()),
         }),
       ),
     ),

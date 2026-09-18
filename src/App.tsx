@@ -4,6 +4,7 @@ import { api } from "../convex/_generated/api";
 import type { Id } from "../convex/_generated/dataModel";
 import { ClaimList } from "./components/ClaimList";
 import { ClaimView } from "./components/ClaimView";
+import { Wordmark } from "./components/Logo";
 import { NewClaim } from "./components/NewClaim";
 
 // The selected claim lives in the URL hash so a claim page can be shared or reloaded.
@@ -31,10 +32,10 @@ export default function App() {
   return (
     <div className="shell">
       <header className="masthead">
-        <a className="wordmark" href="#" onClick={() => select(null)}>
-          Reclamo<span>Clock</span>
+        <a className="wordmark" href="#" onClick={() => select(null)} aria-label="Duebell home">
+          <Wordmark />
         </a>
-        <p className="masthead__tag">Holding companies to Peru's 15-day complaint law</p>
+        <p className="masthead__tag">Peru gives companies 15 business days to answer a complaint. We make sure they do.</p>
       </header>
 
       <div className="layout">
