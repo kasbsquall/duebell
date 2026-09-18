@@ -1,32 +1,47 @@
-# React + TypeScript + Vite
+# Duebell
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+In Peru, a company must answer a formal consumer complaint within **15 business days**, with no extension. Most people never check. Duebell keeps the clock for them.
 
-Currently, two official plugins are available:
+**Live app:** https://doting-lyrebird-179.convex.site
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## How it works
 
-## React Compiler
+1. You file your complaint in the company's official complaint book (the *Libro de Reclamaciones*) and give Duebell's inbox as your contact email.
+2. **Convex** starts a legal clock that counts Peruvian business days, skipping weekends and national holidays. A scheduled function fires at the end of the deadline day and marks the claim overdue if no real answer arrived.
+3. When the company replies, **AgentMail** receives the email through a signed webhook and routes it to the right claim by thread or reference code.
+4. **OpenAI** classifies the reply as a real commitment, a resolution, or stalling. It quotes the exact sentence it relied on, and the quote is checked against the original email before it is shown.
+5. **Firecrawl** drives Indecopi's public sanctions registry (Indecopi is Peru's consumer protection agency) and brings back the company's sanction record, which OpenAI translates into plain English.
+6. If the company stalls or misses the deadline, Duebell drafts the filing for Indecopi in Spanish, with an English version for reference. You review it and submit it yourself.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Everything updates live in the browser through Convex queries.
 
-## Expanding the Oxlint configuration
+## Try it
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+Open the live app, click **Try it with a sample complaint**, then **Reply as the company**. Your own email client opens with a typical non-answer. Send it and watch the page classify it. Use **Jump past the deadline** to see what happens when the company runs out of time.
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+## Stack
+
+| Piece | Where |
+|---|---|
+| Schema, indexes | `convex/schema.ts` |
+| Legal clock and state machine | `convex/claims.ts`, `convex/lib/businessDays.ts` |
+| Inbound email webhook | `convex/http.ts`, `convex/inbound.ts` |
+| Reply classification | `convex/classify.ts`, `convex/lib/classification.ts` |
+| Sanctions lookup | `convex/sanctions.ts`, `convex/lib/sanctions.ts` |
+| Frontend | `src/`, served by Convex static hosting |
+
+## Run locally
+
+```bash
+npm install
+npx convex dev
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Set these on your Convex deployment: `OPENAI_API_KEY`, `FIRECRAWL_API_KEY`, `AGENTMAIL_API_KEY`, `AGENTMAIL_WEBHOOK_SECRET`, `AGENTMAIL_INBOX_ADDRESS`.
+
+```bash
+npm test
+```
+
+Built for the Convex All Gas Hackathon. Build log: [hackathon.md](./hackathon.md). Design system: [docs/design-system.md](./docs/design-system.md).
