@@ -3,6 +3,11 @@
 In Peru, a company must answer a formal consumer complaint within **15 business days**, with no extension. Most people never check. Duebell keeps the clock for them.
 
 **Live app:** https://sleek-grouse-640.convex.site
+**Demo video (1:36):** https://youtu.be/dViTfHukVrc
+
+[![Duebell demo video](docs/media/video-thumbnail.png)](https://youtu.be/dViTfHukVrc)
+
+The video is a real run in production on Sep 18, 2026. The company reply is a sample text sent through the same webhook handler, and the demo control moves the calendar so the deadline can pass on camera; the deadline check itself runs on its own. The Convex logs shown are from that same run.
 
 ## How it works
 

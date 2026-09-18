@@ -53,3 +53,7 @@ Visitors can now see the whole loop without sending an email. **Simulate the com
 
 ### 2026-09-18 - working tree
 The sanctions card now shows the lookup at work while Firecrawl reads Indecopi's registry: what it is doing, why it takes time, and a running count, where it used to show a grey block. The Spanish filing marks the consumer's description and the company's reply as original text, since either can be in English. The claim list scrolls with the page (`src/components/SanctionsCard.tsx`, `src/lib/draft.ts`, `src/styles/app.css`).
+
+### Demo video
+
+Recorded and edited the demo video: https://youtu.be/dViTfHukVrc (1:36). All product footage is a 2K recording of one run in production (case RC-PJNS), with `npx convex logs --prod --success` streaming during the run so the logs on screen belong to the same case. The 3D stamp, the business-day bars and the end card are rendered with Remotion and three.js; voiceover by ElevenLabs, captions timed with ElevenLabs forced alignment. The live UI got several fixes before recording: service logos and a clearer done state in the replay rail, English as the default filing view with Spanish marked as the version that is filed, a glossary of Peruvian terms, a working "How it works" link, and optional per-chapter narration in the recorded case (`src/demo/`, `src/components/NextStep.tsx`, `public/narration/`).
