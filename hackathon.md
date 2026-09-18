@@ -12,7 +12,7 @@
 - **Auth:** none
 - **AI models:** gpt-5.4-mini-2026-03-17
 - **Started:** 2026-09-18T13:25:00Z
-- **Last updated:** 2026-09-18T15:50:00Z
+- **Last updated:** 2026-09-18T16:20:00Z
 
 ## Log
 
@@ -50,3 +50,6 @@ Evidence for the recorded case: a full run on the dev deployment on 2026-09-18 (
 
 ### 2026-09-18 - working tree
 Visitors can now see the whole loop without sending an email. **Simulate the company's reply** delivers a sample non-answer through the same storage and classification path as a signed AgentMail webhook, at most once per claim, and never takes over the thread a real reply will arrive on. Verified in the browser on dev: sample complaint created, simulated reply classified as stalling at 99% within seconds, button disabled afterwards. Three new tests cover the once-per-claim rule and thread handling; 43 tests pass. The home page now states the outcome of the recorded case before it plays, and the README gained a 30 second walkthrough, the AI safeguards, and a limits section (`convex/inbound.ts`, `convex/lib/sampleReply.ts`, `src/components/ReplyChannel.tsx`, `src/demo/DemoPage.tsx`, `README.md`).
+
+### 2026-09-18 - working tree
+The sanctions card now shows the lookup at work while Firecrawl reads Indecopi's registry: what it is doing, why it takes time, and a running count, where it used to show a grey block. The Spanish filing marks the consumer's description and the company's reply as original text, since either can be in English. The claim list scrolls with the page (`src/components/SanctionsCard.tsx`, `src/lib/draft.ts`, `src/styles/app.css`).

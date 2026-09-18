@@ -40,11 +40,11 @@ export function buildDraft(claim: DraftInput, lang: Lang): string {
       ? [
           `Proveedor: ${company}`,
           `Reclamo presentado en el Libro de Reclamaciones el ${claim.filedDate}. Referencia ${claim.referenceCode}.`,
-          `Hechos: ${claim.summary}`,
+          `Hechos (descripción del consumidor, texto original): ${claim.summary}`,
           overdue
             ? `El proveedor no brindó una respuesta dentro del plazo de 15 días hábiles, vencido el ${claim.deadlineDate}.`
             : "El proveedor respondió sin ofrecer una solución concreta, fecha ni monto.",
-          quote ? `Respuesta recibida: "${quote}"` : "",
+          quote ? `Respuesta recibida del proveedor (texto original): "${quote}"` : "",
           "Solicito la intervención de Indecopi para que el proveedor atienda mi reclamo.",
         ]
       : [

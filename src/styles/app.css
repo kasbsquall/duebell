@@ -203,8 +203,6 @@
 
 /* ---------- Docket (claim list) ---------- */
 .docket {
-  position: sticky;
-  top: var(--s-5);
   animation: rise 240ms var(--ease-out) 60ms both;
 }
 

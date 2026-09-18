@@ -1,5 +1,6 @@
 import { ArrowSquareOut, Gavel, Scales } from "@phosphor-icons/react";
 import { useMutation } from "convex/react";
+import { useEffect, useState } from "react";
 import { api } from "../../convex/_generated/api";
 import type { ClaimDetail } from "../lib/format";
 
@@ -28,12 +29,7 @@ export function SanctionsCard({ claim }: SanctionsCardProps) {
         </div>
       )}
 
-      {record?.status === "pending" && (
-        <div aria-busy="true">
-          <p className="muted">Checking Indecopi, Peru's consumer protection agency, for past sanctions…</p>
-          <div className="skeleton skeleton--block" />
-        </div>
-      )}
+      {record?.status === "pending" && <PendingLookup company={record.query} />}
 
       {record?.status === "clean" && (
         <p>No sanctions found for “{record.query}” in the last 4 years.</p>
@@ -106,5 +102,30 @@ export function SanctionsCard({ claim }: SanctionsCardProps) {
         </>
       )}
     </section>
+  );
+}
+
+// Firecrawl drives a registry with no API, which takes a while. Show that work is happening
+// and for how long, instead of a grey block that reads as broken.
+// The count starts when this view opened; server and browser clocks can disagree.
+function PendingLookup({ company }: { company: string }) {
+  const [since] = useState(() => Date.now());
+  const [now, setNow] = useState(since);
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const seconds = Math.max(0, Math.floor((now - since) / 1000));
+
+  return (
+    <div className="lookup" aria-busy="true" aria-live="polite">
+      <span className="lookup__bar" aria-hidden />
+      <p className="lookup__title">Searching Indecopi's public registry for “{company}”</p>
+      <p className="muted">
+        The registry has no API, so Firecrawl opens it like a browser, finds the company and reads its
+        sanction record.
+      </p>
+      <p className="lookup__time num">{seconds}s so far</p>
+    </div>
   );
 }
