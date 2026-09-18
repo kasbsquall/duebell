@@ -6,6 +6,11 @@ import {
   HourglassSimpleLow,
   MagnifyingGlass,
   Scales,
+  Bank,
+  Notebook,
+  Storefront,
+  Coins,
+  type Icon,
 } from "@phosphor-icons/react";
 import { formatDate } from "../lib/format";
 import { CASE } from "./DemoCards";
@@ -34,12 +39,12 @@ const STEPS = [
   },
 ];
 
-const GLOSSARY: readonly [string, string][] = [
-  ["Indecopi", "Peru's national consumer protection agency. It receives consumer filings and can sanction companies."],
-  ["Libro de Reclamaciones", "The complaint book every business in Peru must offer, online or in store. Filing there starts the legal clock."],
-  ["15 business days", "The time a company has to answer a complaint. Weekends and national holidays do not count."],
-  ["Saga Falabella", "A large Peruvian department store chain. It is the company in the recorded case."],
-  ["UIT", "Peru's tax reference unit. Indecopi states its fines in UIT."],
+const GLOSSARY: readonly { Glyph: Icon; kind: string; term: string; def: string }[] = [
+  { Glyph: Bank, kind: "Agency", term: "Indecopi", def: "Peru's national consumer protection agency. It receives consumer filings and can sanction companies." },
+  { Glyph: Notebook, kind: "Where you complain", term: "Libro de Reclamaciones", def: "The complaint book every business in Peru must offer, online or in store. Filing there starts the legal clock." },
+  { Glyph: HourglassSimpleLow, kind: "The deadline", term: "15 business days", def: "The time a company has to answer a complaint. Weekends and national holidays do not count." },
+  { Glyph: Storefront, kind: "The company", term: "Saga Falabella", def: "A large Peruvian department store chain. It is the company in the recorded case." },
+  { Glyph: Coins, kind: "Fine unit", term: "UIT", def: "Peru's tax reference unit. Indecopi states its fines in UIT." },
 ];
 
 export function DemoPage() {
@@ -88,6 +93,7 @@ export function DemoPage() {
       <DemoPlayer />
 
       <section className="how" id="how" aria-labelledby="how-heading">
+        <p className="how__eyebrow">How it works</p>
         <h2 id="how-heading" className="how__title">
           One complaint, four systems, no waiting on the consumer.
         </h2>
@@ -103,13 +109,23 @@ export function DemoPage() {
         </ol>
       </section>
       <section className="glossary" aria-labelledby="glossary-heading">
-        <h2 id="glossary-heading" className="glossary__title">
-          New to Peru's consumer system? The terms on this page
-        </h2>
+        <header className="glossary__head">
+          <p className="glossary__eyebrow">Glossary</p>
+          <h2 id="glossary-heading" className="glossary__title">
+            New to Peru's consumer system?
+          </h2>
+          <p className="glossary__lede">Five terms you will meet on this page, in plain words.</p>
+        </header>
         <dl className="glossary__list">
-          {GLOSSARY.map(([term, def]) => (
-            <div key={term} className="glossary__item">
-              <dt>{term}</dt>
+          {GLOSSARY.map(({ Glyph, kind, term, def }, i) => (
+            <div key={term} className="glossary__item" style={{ "--i": i } as React.CSSProperties}>
+              <span className="glossary__icon" aria-hidden>
+                <Glyph size={20} weight="light" />
+              </span>
+              <dt>
+                <span className="glossary__kind">{kind}</span>
+                <span className="glossary__term">{term}</span>
+              </dt>
               <dd>{def}</dd>
             </div>
           ))}
