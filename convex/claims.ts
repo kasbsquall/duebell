@@ -71,7 +71,7 @@ export const create = mutation({
     await ctx.db.insert("claimEvents", {
       claimId,
       kind: "filed",
-      detail: `Complaint filed. The company must answer by ${deadlineDate}.`,
+      detail: "Complaint filed. The 15 business day clock started.",
     });
     await startSanctionsLookup(ctx, claimId, args.companyRuc?.trim() || args.companyName.trim());
     return claimId;
@@ -81,7 +81,12 @@ export const create = mutation({
 export const list = query({
   args: {},
   handler: async (ctx) => {
-    return ctx.db.query("claims").order("desc").take(50);
+    const claims = await ctx.db.query("claims").order("desc").take(50);
+    const today = limaDate(Date.now());
+    return claims.map((claim) => ({
+      ...claim,
+      businessDaysElapsed: businessDaysElapsed(claim.filedDate, today),
+    }));
   },
 });
 

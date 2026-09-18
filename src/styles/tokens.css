@@ -1,0 +1,151 @@
+@import "@fontsource-variable/bricolage-grotesque";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+
+:root {
+  /* Paper and ink: one warm grey family */
+  --paper: oklch(96.6% 0.011 85);
+  --paper-sunk: oklch(93.8% 0.014 85);
+  --paper-raised: oklch(98.6% 0.006 85);
+  --ink: oklch(23% 0.016 60);
+  --ink-2: oklch(41% 0.014 60);
+  --ink-3: oklch(57% 0.012 60);
+  --rule: oklch(23% 0.016 60 / 0.1);
+  --rule-strong: oklch(23% 0.016 60 / 0.22);
+
+  /* The only accent: a rubber-stamp red for stalling and missed deadlines */
+  --stamp: oklch(54% 0.19 30);
+  --stamp-wash: oklch(54% 0.19 30 / 0.08);
+  /* Semantic green, used only for real commitments */
+  --kept: oklch(47% 0.09 155);
+  --kept-wash: oklch(47% 0.09 155 / 0.09);
+
+  --font-ui: "Bricolage Grotesque Variable", "Bricolage Grotesque", ui-serif, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  /* Major third scale */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.563rem;
+  --text-2xl: 1.953rem;
+  --text-hero: clamp(4rem, 2.6rem + 5vw, 6.5rem);
+
+  /* Rhythm: tight inside, wide between (2px to 96px) */
+  --s-1: 2px;
+  --s-2: 6px;
+  --s-3: 12px;
+  --s-4: 20px;
+  --s-5: 32px;
+  --s-6: 56px;
+  --s-7: 96px;
+
+  --radius: 3px;
+  --shadow: 0 1px 0 oklch(100% 0 0 / 0.6) inset, 0 18px 40px -28px oklch(35% 0.03 60 / 0.35);
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-move: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Paper grain */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums lining-nums slashed-zero;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+  margin: 0;
+}
+
+p {
+  text-wrap: pretty;
+  margin: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tick-in {
+  from {
+    transform: scaleY(0.2);
+    opacity: 0;
+  }
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes stamp-in {
+  from {
+    opacity: 0;
+    transform: rotate(-3deg) scale(1.08);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(-3deg) scale(1);
+  }
+}
+
+@keyframes shimmer {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

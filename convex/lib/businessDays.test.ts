@@ -5,6 +5,7 @@ import {
   endOfLimaDay,
   isBusinessDay,
   limaDate,
+  subtractBusinessDays,
 } from "./businessDays";
 
 describe("limaDate", () => {
@@ -60,5 +61,13 @@ describe("businessDaysElapsed", () => {
 describe("endOfLimaDay", () => {
   test("is midnight Lima, which is 05:00 UTC the next day", () => {
     expect(endOfLimaDay("2026-10-12")).toBe(Date.UTC(2026, 9, 13, 5, 0));
+  });
+});
+
+describe("subtractBusinessDays", () => {
+  test("lands on a business day and round-trips with addBusinessDays", () => {
+    const from = subtractBusinessDays("2026-09-18", 15);
+    expect(isBusinessDay(from)).toBe(true);
+    expect(businessDaysElapsed(from, "2026-09-18")).toBe(15);
   });
 });

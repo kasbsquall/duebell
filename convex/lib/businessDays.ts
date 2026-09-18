@@ -74,5 +74,9 @@ export function subtractBusinessDays(toDate: string, count: number): string {
     if (isBusinessDay(date)) remaining--;
     date = format(new Date(toUtcNoon(date).getTime() - DAY_MS));
   }
+  // Land on a business day so the filing date reads naturally.
+  while (!isBusinessDay(date)) {
+    date = format(new Date(toUtcNoon(date).getTime() - DAY_MS));
+  }
   return date;
 }

@@ -1,5 +1,6 @@
 import { httpRouter } from "convex/server";
 import { AgentMail } from "@agentmail/convex";
+import { registerStaticRoutes } from "@convex-dev/static-hosting";
 import { components, internal } from "./_generated/api";
 import { httpAction } from "./_generated/server";
 
@@ -36,5 +37,8 @@ http.route({
     return res;
   }),
 });
+
+// Exact routes above win; everything else serves the built frontend.
+registerStaticRoutes(http, components.staticHosting);
 
 export default http;
