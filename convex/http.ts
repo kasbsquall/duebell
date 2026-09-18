@@ -11,14 +11,20 @@ http.route({
   path: "/agentmail/webhook",
   method: "POST",
   handler: httpAction(async (ctx, req) => {
-    const body: unknown = await req.clone().json().catch(() => null);
+    const raw = await req.text();
+    let body: unknown = null;
+    try {
+      body = JSON.parse(raw);
+    } catch {
+      body = null;
+    }
     // @agentmail/convex 0.1.0 types its ctx against an older Convex; runtime shape is the same.
     const res = await agentmail.handleWebhook(
       ctx as unknown as Parameters<typeof agentmail.handleWebhook>[0],
-      req,
+      new Request(req.url, { method: req.method, headers: req.headers, body: raw }),
     );
-    // The component verifies the signature and stores the event. Its callback queue
-    // did not dispatch in testing, so we hand verified inbound mail to our handler here.
+    // The component verifies the signature and stores the event. We then hand verified
+    // inbound mail to our handler in the same request instead of its async callback queue.
     const event = body as { event_type?: string; event_id?: string; message?: unknown } | null;
     if (res.ok && event?.event_type === "message.received") {
       await ctx.runMutation(internal.inbound.onMessageReceived, {
