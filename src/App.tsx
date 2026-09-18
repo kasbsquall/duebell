@@ -6,38 +6,59 @@ import { ClaimList } from "./components/ClaimList";
 import { ClaimView } from "./components/ClaimView";
 import { Wordmark } from "./components/Logo";
 import { NewClaim } from "./components/NewClaim";
+import { DemoPage } from "./demo/DemoPage";
 
-// The selected claim lives in the URL hash so a claim page can be shared or reloaded.
-function readHash(): Id<"claims"> | null {
-  const id = window.location.hash.replace(/^#\/?claim\//, "");
-  return id && id !== window.location.hash ? (id as Id<"claims">) : null;
+type Route = { page: "demo" } | { page: "live"; claimId: Id<"claims"> | null };
+
+// The route lives in the URL hash so a claim page can be shared or reloaded.
+// "#/" is the recorded demo, "#/new" the live app, "#/claim/<id>" a live claim.
+function readHash(): Route {
+  const hash = window.location.hash;
+  const claim = hash.match(/^#\/?claim\/(.+)$/);
+  if (claim) return { page: "live", claimId: claim[1] as Id<"claims"> };
+  if (/^#\/?new/.test(hash)) return { page: "live", claimId: null };
+  return { page: "demo" };
 }
 
 export default function App() {
   const claims = useQuery(api.claims.list);
   const config = useQuery(api.config.get);
-  const [selectedId, setSelectedId] = useState<Id<"claims"> | null>(readHash);
+  const [route, setRoute] = useState<Route>(readHash);
+  const selectedId = route.page === "live" ? route.claimId : null;
 
   useEffect(() => {
-    const onHash = () => setSelectedId(readHash());
+    const onHash = () => {
+      setRoute(readHash());
+      window.scrollTo({ top: 0 });
+    };
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
 
   function select(id: Id<"claims"> | null) {
-    window.location.hash = id ? `/claim/${id}` : "";
-    setSelectedId(id);
+    window.location.hash = id ? `/claim/${id}` : "/new";
+    setRoute({ page: "live", claimId: id });
   }
 
   return (
     <div className="shell">
       <header className="masthead">
-        <a className="wordmark" href="#" onClick={() => select(null)} aria-label="Duebell home">
+        <a className="wordmark" href="#/" aria-label="Duebell home">
           <Wordmark />
         </a>
-        <p className="masthead__tag">Peru gives companies 15 business days to answer a complaint. We make sure they do.</p>
+        <nav className="nav" aria-label="Main">
+          <a href="#/" aria-current={route.page === "demo" ? "page" : undefined}>
+            Recorded case
+          </a>
+          <a href="#/new" aria-current={route.page === "live" ? "page" : undefined}>
+            Try it live
+          </a>
+        </nav>
       </header>
 
+      {route.page === "demo" ? (
+        <DemoPage />
+      ) : (
       <div className="layout">
         <ClaimList claims={claims} selectedId={selectedId} onSelect={select} onNew={() => select(null)} />
         <main className="stage">
@@ -48,6 +69,7 @@ export default function App() {
           )}
         </main>
       </div>
+      )}
     </div>
   );
 }

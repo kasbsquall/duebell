@@ -1,43 +1,9 @@
 import { ArrowSquareOut, Copy, Megaphone } from "@phosphor-icons/react";
 import { useState } from "react";
+import { buildDraft, draftInputFromClaim, type Lang } from "../lib/draft";
 import { formatDate, type ClaimDetail } from "../lib/format";
 
 const RECLAMA_VIRTUAL_URL = "https://enlinea.indecopi.gob.pe/reclamavirtual/";
-
-type Lang = "es" | "en";
-
-// Indecopi filings are in Spanish; the English version is a reference for the user.
-function buildDraft(claim: ClaimDetail, lang: Lang): string {
-  const lastVerdict = [...claim.events].reverse().find((e) => e.kind === "classified");
-  const ruc = claim.sanctions?.ruc ? ` (RUC ${claim.sanctions.ruc})` : "";
-  const company = `${claim.sanctions?.legalName ?? claim.companyName}${ruc}`;
-  const overdue = claim.status === "overdue";
-  const quote = lastVerdict?.evidenceQuote;
-
-  const lines =
-    lang === "es"
-      ? [
-          `Proveedor: ${company}`,
-          `Reclamo presentado en el Libro de Reclamaciones el ${claim.filedDate}. Referencia ${claim.referenceCode}.`,
-          `Hechos: ${claim.summary}`,
-          overdue
-            ? `El proveedor no brindó una respuesta dentro del plazo de 15 días hábiles, vencido el ${claim.deadlineDate}.`
-            : "El proveedor respondió sin ofrecer una solución concreta, fecha ni monto.",
-          quote ? `Respuesta recibida: "${quote}"` : "",
-          "Solicito la intervención de Indecopi para que el proveedor atienda mi reclamo.",
-        ]
-      : [
-          `Company: ${company}`,
-          `Complaint filed in the company's complaint book on ${claim.filedDate}. Reference ${claim.referenceCode}.`,
-          `Facts: ${claim.summary}`,
-          overdue
-            ? `The company did not answer within the 15 business day legal deadline, which expired on ${claim.deadlineDate}.`
-            : "The company replied without offering a concrete fix, date or amount.",
-          quote ? `Reply received: "${quote}"` : "",
-          "I request Indecopi's intervention so the company addresses my complaint.",
-        ];
-  return lines.filter(Boolean).join("\n\n");
-}
 
 interface NextStepProps {
   claim: ClaimDetail;
@@ -49,7 +15,7 @@ export function NextStep({ claim }: NextStepProps) {
 
   async function copyFiling() {
     try {
-      await navigator.clipboard.writeText(buildDraft(claim, "es"));
+      await navigator.clipboard.writeText(buildDraft(draftInputFromClaim(claim), "es"));
       setCopied(true);
       setTimeout(() => setCopied(false), 1600);
     } catch {
@@ -82,7 +48,7 @@ export function NextStep({ claim }: NextStepProps) {
           </button>
         </div>
         <pre className="next__draft" lang={lang}>
-          {buildDraft(claim, lang)}
+          {buildDraft(draftInputFromClaim(claim), lang)}
         </pre>
       </div>
       <div className="next__actions">

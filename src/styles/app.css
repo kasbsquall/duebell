@@ -4,17 +4,17 @@
   z-index: 2;
   max-width: 1320px;
   margin: 0 auto;
-  padding: var(--s-5) var(--s-5) var(--s-7);
+  padding: var(--s-4) var(--s-5) var(--s-7);
 }
 
 .masthead {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: var(--s-4);
-  padding-bottom: var(--s-4);
+  padding-bottom: var(--s-3);
   border-bottom: 1px solid var(--rule-strong);
-  margin-bottom: var(--s-6);
+  margin-bottom: var(--s-4);
   animation: rise 240ms var(--ease-out) both;
 }
 
@@ -75,11 +75,15 @@
   color: var(--ink-3);
 }
 
+/* Same double-bezel primitive as the recorded case player. */
 .panel {
   background: var(--paper-raised);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  border: 0;
+  border-radius: 16px;
+  box-shadow:
+    0 0 0 1px var(--rule),
+    0 0 0 5px oklch(23% 0.016 60 / 0.03),
+    0 40px 80px -50px oklch(35% 0.04 60 / 0.45);
   padding: var(--s-5);
 }
 
@@ -104,7 +108,7 @@
   gap: var(--s-2);
   min-height: 42px;
   padding: 0 var(--s-4);
-  border-radius: var(--radius);
+  border-radius: 999px;
   border: 1px solid transparent;
   font: inherit;
   font-size: var(--text-sm);
@@ -415,7 +419,7 @@
 .claim__grid {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: var(--s-4);
+  gap: var(--s-5);
 }
 
 .block {
@@ -481,7 +485,7 @@
 
 .clock__count {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--s-3);
   font-size: var(--text-hero);
   line-height: 0.85;

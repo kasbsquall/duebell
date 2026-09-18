@@ -1,0 +1,69 @@
+{
+  "recordedOn": "2026-09-18",
+  "referenceCode": "RC-V6ZQ",
+  "companyName": "Saga Falabella",
+  "summary": "I returned a jacket on August 24 and the PEN 389 refund never reached my card.",
+  "filedDate": "2026-08-28",
+  "deadlineDate": "2026-09-18",
+  "deadlineBusinessDays": 15,
+  "reply": {
+    "subject": "Re: Complaint [Ref RC-V6ZQ]",
+    "text": "Dear customer,\n\nThank you for contacting us. Your complaint has been forwarded to the corresponding area and our team is currently reviewing your case.\n\nWe will get back to you as soon as possible.\n\nCustomer Service Team"
+  },
+  "verdict": {
+    "verdict": "stalling",
+    "confidence": 0.99,
+    "evidenceQuote": "Your complaint has been forwarded to the corresponding area and our team is currently reviewing your case.",
+    "reason": "The company only says it is reviewing the case and does not confirm a refund or any concrete fix.",
+    "missing": [
+      "date",
+      "amount",
+      "remedy",
+      "responsible_person"
+    ]
+  },
+  "sanctions": {
+    "legalName": "SAGA FALABELLA S A",
+    "ruc": "20100128056",
+    "totalSanctions": 150,
+    "totalFineUit": 41.7,
+    "periodFrom": "2022-09-19",
+    "periodTo": "2026-09-18",
+    "complaintHandlingCount": 1,
+    "recent": [
+      {
+        "year": 2026,
+        "resolution": "149-2026/PS0-IN",
+        "offense": "OPERACIONES NO RECONOCIDAS - CONSUMOS FRAUDULENTOS",
+        "offenseEn": "Unrecognized transactions - fraudulent charges",
+        "fineUit": 0,
+        "finalDate": "2026-09-17"
+      },
+      {
+        "year": 2026,
+        "resolution": "726-2026/PS3",
+        "offense": "INFORMACION",
+        "offenseEn": "Information",
+        "fineUit": 0,
+        "finalDate": "2026-09-16"
+      },
+      {
+        "year": 2026,
+        "resolution": "595-2026/PS1",
+        "offense": "ATENCION DE RECLAMOS - CALIDAD DEL SERVICIO DE ATENCION DE R",
+        "offenseEn": "Claims handling - customer service quality",
+        "fineUit": 0,
+        "finalDate": "2026-09-15"
+      },
+      {
+        "year": 2026,
+        "resolution": "490-2026/PS0-IN",
+        "offense": "FALTA DE IDONEIDAD",
+        "offenseEn": "Lack of suitability",
+        "fineUit": 0,
+        "finalDate": "2026-08-16"
+      }
+    ]
+  },
+  "deadlineEvent": "The legal deadline (2026-09-18) passed without a real answer."
+}

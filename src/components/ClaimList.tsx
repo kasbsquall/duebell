@@ -1,6 +1,6 @@
 import { Plus } from "@phosphor-icons/react";
 import type { Id } from "../../convex/_generated/dataModel";
-import { isAlarm, STATUS_LABEL, type ClaimSummary } from "../lib/format";
+import { formatDate, isAlarm, STATUS_LABEL, type ClaimSummary } from "../lib/format";
 
 interface ClaimListProps {
   claims: ClaimSummary[] | undefined;
@@ -41,7 +41,7 @@ export function ClaimList({ claims, selectedId, onSelect, onNew }: ClaimListProp
                   {STATUS_LABEL[claim.status]}
                 </span>
                 <span className="docket__days num">
-                  {claim.status === "overdue" ? "missed" : `${left} days left`}
+                  {claim.status === "overdue" ? `due ${formatDate(claim.deadlineDate)}` : `${left} days left`}
                 </span>
               </button>
             </li>

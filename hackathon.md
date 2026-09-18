@@ -12,7 +12,7 @@
 - **Auth:** none
 - **AI models:** gpt-5.4-mini-2026-03-17
 - **Started:** 2026-09-18T13:25:00Z
-- **Last updated:** 2026-09-18T15:05:00Z
+- **Last updated:** 2026-09-18T15:30:00Z
 
 ## Log
 
@@ -42,3 +42,6 @@ Added the README, the design system, and this build log (`README.md`, `docs/desi
 
 ### 2026-09-18 - production
 Deployed backend and frontend to the production Convex deployment with its own signed AgentMail webhook. Verified end to end on production: a real reply sent to the case inbox was routed to its claim and classified as stalling (0.98), and the Firecrawl sanctions lookup returned the company's record with English offense labels.
+
+### 2026-09-18 - working tree
+Added a recorded case on the home page: a 44 second, self-playing replay of a real run on the dev deployment (sanctions lookup, reply classification, deadline, filing), with chapters labelled by the system that produced each step and an on-screen note about what is compressed. The live app moved to its own route. Visual pass across both views: ink clock block, chapter rail, stamp animations, double-bezel panels (`src/demo/`, `src/styles/demo.css`, `src/lib/draft.ts`).
