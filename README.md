@@ -17,6 +17,8 @@ The video is a real run in production on Sep 18, 2026. The company reply is a sa
 4. **OpenAI** classifies the reply as a real commitment, a resolution, or stalling. It quotes the exact sentence it relied on, and the quote is checked against the original email before it is shown.
 5. **Firecrawl** drives Indecopi's public sanctions registry (Indecopi is Peru's consumer protection agency) and brings back the company's sanction record, which OpenAI translates into plain English.
 6. If the company stalls or misses the deadline, Duebell drafts the filing for Indecopi in Spanish, with an English version for reference. You review it and submit it yourself.
+7. You can also put the complaint in writing: Duebell emails the company a formal follow-up in Spanish from its **AgentMail** inbox, after you confirm the address. The company's answer to that email comes back to the same claim and is classified like any other reply. Delivery status is shown live from the AgentMail component's outbox.
+8. A daily **cron** posts a notice on every open claim with 3 or fewer business days left. When the company fixes the problem, you mark the claim resolved and the clock stops.
 
 Everything updates live in the browser through Convex queries.
 
@@ -26,6 +28,7 @@ Everything updates live in the browser through Convex queries.
 2. Click **Try it live**, then **Try it with a sample complaint**. The clock starts and Firecrawl begins pulling the company's sanction record.
 3. Click **Simulate the company's reply**. A typical non-answer goes through the same handler a real email uses, and OpenAI classifies it within seconds. You can also send a real reply from your own mail client with **Send a real one by email**.
 4. Click **Jump past the deadline** to see the scheduled deadline check fire and the filing appear.
+5. Optional: in **Put it in writing**, send the formal letter to your own address to see what the company receives.
 
 ## How the AI is kept honest
 
@@ -33,6 +36,11 @@ Everything updates live in the browser through Convex queries.
 - The quoted sentence is checked against the original email before it is shown. A quote that does not appear in the reply is discarded (`convex/lib/classification.ts`).
 - The model never moves the clock. Deadlines are computed in TypeScript from Lima business days, and a missed deadline stays missed unless the company actually resolves the case.
 - Offense names from Indecopi are translated for display only; the Spanish original is kept.
+- OpenAI calls run through the Convex action-retrier (3 attempts with backoff). If all fail, the claim records that the reply was not analyzed instead of waiting forever.
+
+## Guarding the paid calls
+
+Every call that costs money or sends mail is rate limited with the Convex rate-limiter component (`convex/lib/limits.ts`): per session, new complaints, simulated replies, registry refreshes and letters (3 per day, 2 per complaint); across the whole deployment, a budget for Firecrawl registry lookups. A limited action tells the user when to try again.
 
 ## Limits
 
@@ -41,6 +49,7 @@ Everything updates live in the browser through Convex queries.
 - Indecopi's sanctions registry has no API. Firecrawl drives the public site, so a redesign of that site can break the lookup until the parser is updated.
 - The recorded case uses a sample company reply and compresses the 15 business days. The sanctions record, the verdict and the quote in it are real output.
 - The simulated reply works once per claim. Duebell drafts the Indecopi filing but never submits it for you.
+- Letters go out only to the one address the user types and confirms. Duebell does not look up company addresses on its own.
 
 ## Beyond Peru
 
@@ -53,7 +62,11 @@ Duebell is built for Peru, and the country-specific parts are kept small. The 15
 | Schema, indexes | `convex/schema.ts` |
 | Legal clock and state machine | `convex/claims.ts`, `convex/lib/businessDays.ts` |
 | Inbound email webhook | `convex/http.ts`, `convex/inbound.ts` |
-| Reply classification | `convex/classify.ts`, `convex/lib/classification.ts` |
+| Reply classification, with retries | `convex/classify.ts`, `convex/lib/classification.ts`, `convex/lib/retrier.ts` |
+| Letters to the company | `convex/outbound.ts`, `convex/lib/letter.ts`, `src/components/CompanyLetter.tsx` |
+| Daily deadline notices | `convex/crons.ts`, `convex/claims.ts` |
+| Rate limits | `convex/lib/limits.ts` |
+| Components | `convex/convex.config.ts`: AgentMail, rate-limiter, action-retrier, static hosting, plus Convex Auth |
 | Sanctions lookup | `convex/sanctions.ts`, `convex/lib/sanctions.ts` |
 | Frontend | `src/`, served by Convex static hosting |
 

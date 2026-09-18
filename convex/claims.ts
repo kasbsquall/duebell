@@ -12,6 +12,7 @@ import {
   subtractBusinessDays,
 } from "./lib/businessDays";
 import { generateReference } from "./lib/reference";
+import { enforceLimit } from "./lib/limits";
 import { requireOwnClaim, requireUser } from "./lib/owner";
 import { startSanctionsLookup } from "./sanctions";
 
@@ -58,6 +59,7 @@ export const create = mutation({
   returns: v.id("claims"),
   handler: async (ctx, args) => {
     const ownerId = await requireUser(ctx);
+    await enforceLimit(ctx, "createClaim", ownerId, "Filing new complaints");
     const filedDate = limaDate(Date.now());
     const deadlineDate = addBusinessDays(filedDate, RESPONSE_DEADLINE_BUSINESS_DAYS);
     const claimId = await ctx.db.insert("claims", {
@@ -138,6 +140,55 @@ export const checkDeadline = internalMutation({
       detail: `The legal deadline (${claim.deadlineDate}) passed without a real answer.`,
     });
     return null;
+  },
+});
+
+// The user closes the case once the company actually fixed it. The clock stops.
+export const markResolved = mutation({
+  args: { claimId: v.id("claims") },
+  returns: v.null(),
+  handler: async (ctx, { claimId }) => {
+    const claim = await requireOwnClaim(ctx, claimId);
+    if (claim.status === "resolved") return null;
+    if (claim.deadlineJobId) await ctx.scheduler.cancel(claim.deadlineJobId);
+    await ctx.db.patch("claims", claimId, { status: "resolved", deadlineJobId: undefined });
+    await ctx.db.insert("claimEvents", {
+      claimId,
+      kind: "resolved",
+      detail: "You marked this complaint as resolved. The clock stopped.",
+    });
+    return null;
+  },
+});
+
+export const DEADLINE_WARNING_DAYS = 3;
+
+// Daily cron: one notice per open claim once 3 or fewer business days remain.
+export const warnDeadlines = internalMutation({
+  args: {},
+  returns: v.number(),
+  handler: async (ctx) => {
+    const today = limaDate(Date.now());
+    let warned = 0;
+    for (const status of ["awaiting_response", "stalling"] as const) {
+      const open = await ctx.db
+        .query("claims")
+        .withIndex("by_status", (q) => q.eq("status", status))
+        .take(500);
+      for (const claim of open) {
+        if (claim.deadlineWarned) continue;
+        const left = RESPONSE_DEADLINE_BUSINESS_DAYS - businessDaysElapsed(claim.filedDate, today);
+        if (left < 1 || left > DEADLINE_WARNING_DAYS) continue;
+        await ctx.db.patch("claims", claim._id, { deadlineWarned: true });
+        await ctx.db.insert("claimEvents", {
+          claimId: claim._id,
+          kind: "deadline_soon",
+          detail: `${left} business ${left === 1 ? "day" : "days"} left before the ${claim.deadlineDate} deadline.`,
+        });
+        warned++;
+      }
+    }
+    return warned;
   },
 });
 

@@ -1,8 +1,9 @@
-import { FastForward } from "@phosphor-icons/react";
+import { FastForward, SealCheck } from "@phosphor-icons/react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { isAlarm, STATUS_LABEL } from "../lib/format";
+import { CompanyLetter } from "./CompanyLetter";
 import { DeadlineClock } from "./DeadlineClock";
 import { NextStep } from "./NextStep";
 import { ReplyChannel } from "./ReplyChannel";
@@ -18,6 +19,7 @@ interface ClaimViewProps {
 export function ClaimView({ claimId, inboxAddress }: ClaimViewProps) {
   const claim = useQuery(api.claims.get, { claimId });
   const fastForward = useMutation(api.claims.demoFastForward);
+  const markResolved = useMutation(api.claims.markResolved);
 
   if (claim === undefined) {
     return (
@@ -36,6 +38,8 @@ export function ClaimView({ claimId, inboxAddress }: ClaimViewProps) {
   const latestClassification = latestReply
     ? claim.events.find((e) => e.kind === "classified" && e.replyEventId === latestReply._id)
     : undefined;
+  const analysisFailed =
+    !!latestReply && claim.events.some((e) => e.kind === "analysis_failed" && e.replyEventId === latestReply._id);
   const daysLeft = claim.deadlineBusinessDays - claim.businessDaysElapsed;
 
   return (
@@ -46,9 +50,22 @@ export function ClaimView({ claimId, inboxAddress }: ClaimViewProps) {
           <h1 className="claim__company">{claim.companyName}</h1>
           <p className="claim__summary">{claim.summary}</p>
         </div>
-        <p className={`status ${isAlarm(claim.status) ? "status--alarm" : ""} status--${claim.status}`}>
-          {STATUS_LABEL[claim.status]}
-        </p>
+        <div className="claim__side">
+          <p className={`status ${isAlarm(claim.status) ? "status--alarm" : ""} status--${claim.status}`}>
+            {STATUS_LABEL[claim.status]}
+          </p>
+          {claim.status !== "resolved" && (
+            <button
+              className="btn btn--quiet claim__resolve"
+              onClick={() => {
+                if (window.confirm("Mark this complaint as resolved? The clock stops.")) void markResolved({ claimId });
+              }}
+            >
+              <SealCheck size={16} weight="light" aria-hidden />
+              The company fixed it
+            </button>
+          )}
+        </div>
       </header>
 
       {claim.status !== "overdue" && claim.status !== "resolved" && (
@@ -83,7 +100,8 @@ export function ClaimView({ claimId, inboxAddress }: ClaimViewProps) {
           <VerdictCard
             reply={latestReply}
             classification={latestClassification}
-            isClassifying={!!latestReply && !latestClassification}
+            isClassifying={!!latestReply && !latestClassification && !analysisFailed}
+            analysisFailed={analysisFailed}
           />
         </div>
         <div className="block block--channel">
@@ -94,6 +112,9 @@ export function ClaimView({ claimId, inboxAddress }: ClaimViewProps) {
             <NextStep claim={claim} />
           </div>
         )}
+        <div className="block block--letter">
+          <CompanyLetter claim={claim} inboxAddress={inboxAddress} />
+        </div>
         <div className="block block--timeline">
           <Timeline events={claim.events} />
         </div>

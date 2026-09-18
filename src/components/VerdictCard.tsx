@@ -19,9 +19,10 @@ interface VerdictCardProps {
   classification: ClaimEvent | undefined;
   reply: ClaimEvent | undefined;
   isClassifying: boolean;
+  analysisFailed?: boolean;
 }
 
-export function VerdictCard({ classification, reply, isClassifying }: VerdictCardProps) {
+export function VerdictCard({ classification, reply, isClassifying, analysisFailed }: VerdictCardProps) {
   if (!reply) {
     return (
       <section className="panel verdict verdict--empty">
@@ -29,6 +30,21 @@ export function VerdictCard({ classification, reply, isClassifying }: VerdictCar
         <Hourglass size={28} weight="light" aria-hidden />
         <p className="muted">No reply yet. Replies sent to this claim's address appear here within seconds.</p>
         <BellMark size={180} className="verdict__watermark" />
+      </section>
+    );
+  }
+
+  if (analysisFailed && !classification?.verdict) {
+    return (
+      <section className="panel verdict verdict--alarm" role="status">
+        <p className="eyebrow">Latest reply · from {reply.from || "the company"}</p>
+        <h2 className="verdict__label">
+          <WarningDiamond size={26} weight="light" aria-hidden />
+          Not analyzed
+        </h2>
+        <p className="verdict__reason">
+          The analysis failed after 3 attempts. The reply is kept in the case file below, and the deadline still runs.
+        </p>
       </section>
     );
   }

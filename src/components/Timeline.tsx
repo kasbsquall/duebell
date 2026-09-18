@@ -1,5 +1,8 @@
 import {
+  Alarm,
   ClockCountdown,
+  PaperPlaneTilt,
+  WarningCircle,
   EnvelopeOpen,
   FastForward,
   FilePlus,
@@ -16,6 +19,9 @@ const KIND: Record<ClaimEvent["kind"], { Icon: Icon; label: string }> = {
   deadline_passed: { Icon: ClockCountdown, label: "Deadline missed" },
   resolved: { Icon: SealCheck, label: "Marked resolved" },
   demo_time_shift: { Icon: FastForward, label: "Demo time jump" },
+  letter_sent: { Icon: PaperPlaneTilt, label: "Letter sent" },
+  deadline_soon: { Icon: Alarm, label: "Deadline close" },
+  analysis_failed: { Icon: WarningCircle, label: "Analysis failed" },
 };
 
 interface TimelineProps {
@@ -32,7 +38,8 @@ export function Timeline({ events }: TimelineProps) {
       <ol>
         {ordered.map((event, i) => {
           const { Icon, label } = KIND[event.kind];
-          const alarm = event.kind === "deadline_passed" || event.verdict === "stalling";
+          const alarm =
+            event.kind === "deadline_passed" || event.kind === "analysis_failed" || event.verdict === "stalling";
           return (
             <li
               key={event._id}

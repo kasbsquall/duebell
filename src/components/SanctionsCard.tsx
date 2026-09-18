@@ -2,6 +2,7 @@ import { ArrowSquareOut, Gavel, Scales } from "@phosphor-icons/react";
 import { useMutation } from "convex/react";
 import { useEffect, useState } from "react";
 import { api } from "../../convex/_generated/api";
+import { userMessage } from "../lib/errors";
 import type { ClaimDetail } from "../lib/format";
 
 const PORTAL_URL = "https://enlinea.indecopi.gob.pe/miraaquienlecompras/";
@@ -11,8 +12,18 @@ interface SanctionsCardProps {
 }
 
 export function SanctionsCard({ claim }: SanctionsCardProps) {
-  const refresh = useMutation(api.sanctions.refresh);
+  const refreshRecord = useMutation(api.sanctions.refresh);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
   const record = claim.sanctions;
+
+  async function refresh(args: { claimId: ClaimDetail["_id"]; ruc?: string }) {
+    setRefreshError(null);
+    try {
+      await refreshRecord(args);
+    } catch (err) {
+      setRefreshError(userMessage(err, "The lookup could not start. Try again."));
+    }
+  }
 
   return (
     <section className="panel record" aria-labelledby="record-heading">
@@ -29,6 +40,12 @@ export function SanctionsCard({ claim }: SanctionsCardProps) {
         </div>
       )}
 
+      {refreshError && (
+        <p className="form__error" role="alert">
+          {refreshError}
+        </p>
+      )}
+
       {record?.status === "pending" && <PendingLookup company={record.query} />}
 
       {record?.status === "clean" && (
@@ -37,7 +54,11 @@ export function SanctionsCard({ claim }: SanctionsCardProps) {
 
       {record?.status === "failed" && (
         <div className="record__failed">
-          <p className="muted">The Indecopi registry did not answer this time.</p>
+          <p className="muted">
+            {record.error?.startsWith("The registry lookup is paused")
+              ? record.error
+              : "The Indecopi registry did not answer this time."}
+          </p>
           <button className="btn btn--quiet" onClick={() => refresh({ claimId: claim._id })}>
             Try again
           </button>

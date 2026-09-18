@@ -3,6 +3,7 @@ import { useMutation } from "convex/react";
 import { useState, type FormEvent } from "react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
+import { userMessage } from "../lib/errors";
 
 const DEMO_CLAIM = {
   companyName: "Saga Falabella",
@@ -26,8 +27,8 @@ export function NewClaim({ onCreated }: NewClaimProps) {
     setError(null);
     try {
       onCreated(await create(values));
-    } catch {
-      setError("We could not save the complaint. Check the fields and try again.");
+    } catch (err) {
+      setError(userMessage(err, "We could not save the complaint. Check the fields and try again."));
     } finally {
       setPending(false);
     }

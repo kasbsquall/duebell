@@ -1,16 +1,8 @@
 /// <reference types="vite/client" />
-import { convexTest } from "convex-test";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { api } from "./_generated/api";
-import schema from "./schema";
+import { newTest, signedIn } from "../test/convex";
 
-const modules = import.meta.glob("./**/*.ts");
-
-// Acts as a signed-in Convex Auth user: getAuthUserId reads the user id from the subject.
-async function signedIn(t = convexTest(schema, modules)) {
-  const userId = await t.run((ctx) => ctx.db.insert("users", {}));
-  return Object.assign(t.withIdentity({ subject: `${userId}|test-session` }), { raw: t });
-}
 
 
 // Friday 2026-09-18, 10:00 in Lima
@@ -109,7 +101,7 @@ describe("ownership", () => {
   });
 
   test("a visitor who is not signed in cannot file a claim", async () => {
-    const t = convexTest(schema, modules);
+    const t = newTest();
     await expect(t.mutation(api.claims.create, newClaim)).rejects.toThrow(/not signed in/i);
     expect(await t.query(api.claims.list, {})).toEqual([]);
   });

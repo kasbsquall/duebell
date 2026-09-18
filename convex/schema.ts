@@ -17,6 +17,9 @@ export const eventKind = v.union(
   v.literal("deadline_passed"),
   v.literal("resolved"),
   v.literal("demo_time_shift"),
+  v.literal("letter_sent"), // written follow-up emailed to the company through AgentMail
+  v.literal("deadline_soon"), // daily cron: 3 or fewer business days left
+  v.literal("analysis_failed"), // OpenAI failed after every retry
 );
 
 export default defineSchema({
@@ -61,6 +64,7 @@ export default defineSchema({
     deadlineJobId: v.optional(v.id("_scheduled_functions")),
     referenceCode: v.optional(v.string()), // e.g. RC-7K2P, used in email subjects
     emailThreadId: v.optional(v.string()), // AgentMail thread once the company replies
+    deadlineWarned: v.optional(v.boolean()), // the "deadline soon" notice was already posted
   })
     .index("by_ownerId", ["ownerId"])
     .index("by_status", ["status"])
@@ -80,7 +84,13 @@ export default defineSchema({
     confidence: v.optional(v.number()),
     evidenceQuote: v.optional(v.string()),
     missing: v.optional(v.array(v.string())),
+    // Set on "reply_received": the action-retrier run that classifies it
+    analysisRunId: v.optional(v.string()),
+    // Set on "letter_sent": recipient and the AgentMail component's outbound id
+    to: v.optional(v.string()),
+    outboundId: v.optional(v.string()),
   })
     .index("by_claimId", ["claimId"])
-    .index("by_messageId", ["messageId"]),
+    .index("by_messageId", ["messageId"])
+    .index("by_analysisRunId", ["analysisRunId"]),
 });

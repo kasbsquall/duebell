@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { internalAction, internalMutation, mutation, type MutationCtx } from "./_generated/server";
+import { enforceLimit, rateLimiter } from "./lib/limits";
 import { requireOwnClaim } from "./lib/owner";
 import { parseSanctionsDetail, parseSearchResults, pickBestMatch } from "./lib/sanctions";
 import { translateOffenses } from "./lib/translate";
@@ -54,6 +55,17 @@ export async function startSanctionsLookup(ctx: MutationCtx, claimId: Id<"claims
     .withIndex("by_claimId", (q) => q.eq("claimId", claimId))
     .first();
   if (existing) await ctx.db.delete("sanctionChecks", existing._id);
+  // Global budget for Firecrawl browser sessions across all visitors.
+  const { ok } = await rateLimiter.limit(ctx, "registryLookup");
+  if (!ok) {
+    await ctx.db.insert("sanctionChecks", {
+      claimId,
+      status: "failed",
+      query,
+      error: "The registry lookup is paused for a few minutes to protect the shared budget. Retry later.",
+    });
+    return;
+  }
   await ctx.db.insert("sanctionChecks", { claimId, status: "pending", query });
   await ctx.scheduler.runAfter(0, internal.sanctions.lookup, { claimId, query });
 }
@@ -64,6 +76,7 @@ export const refresh = mutation({
   returns: v.null(),
   handler: async (ctx, { claimId, ruc }) => {
     const claim = await requireOwnClaim(ctx, claimId);
+    await enforceLimit(ctx, "refreshRecord", claim.ownerId!, "Refreshing the record");
     if (ruc !== undefined) {
       if (!/^\d{11}$/.test(ruc)) throw new Error("RUC must have 11 digits");
       await ctx.db.patch("claims", claimId, { companyRuc: ruc });

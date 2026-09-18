@@ -4,7 +4,9 @@ import { internal } from "./_generated/api";
 import { internalMutation, mutation, type MutationCtx } from "./_generated/server";
 import { SAMPLE_STALLING_REPLY } from "./lib/sampleReply";
 import { extractReference } from "./lib/reference";
+import { enforceLimit } from "./lib/limits";
 import { requireOwnClaim } from "./lib/owner";
+import { retrier } from "./lib/retrier";
 
 const MAX_REPLY_CHARS = 8000;
 const SIMULATED_PREFIX = "simulated:";
@@ -72,7 +74,13 @@ async function storeReply(ctx: MutationCtx, claim: Doc<"claims">, msg: InboundMe
     subject: msg.subject,
     messageId: msg.messageId,
   });
-  await ctx.scheduler.runAfter(0, internal.classify.classifyReply, { replyEventId });
+  const analysisRunId = await retrier.run(
+    ctx,
+    internal.classify.classifyReply,
+    { replyEventId },
+    { onComplete: internal.classify.onAnalysisComplete },
+  );
+  await ctx.db.patch("claimEvents", replyEventId, { analysisRunId });
 }
 
 export const onMessageReceived = internalMutation({
@@ -104,6 +112,7 @@ export const simulateReply = mutation({
       .withIndex("by_messageId", (q) => q.eq("messageId", messageId))
       .first();
     if (used) throw new ConvexError("The sample reply was already used on this claim");
+    await enforceLimit(ctx, "simulateReply", claim.ownerId!, "Simulated replies");
     await storeReply(ctx, claim, {
       messageId,
       threadId: messageId,

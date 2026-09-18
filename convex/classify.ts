@@ -1,3 +1,4 @@
+import { onCompleteValidator } from "@convex-dev/action-retrier";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { internalAction, internalMutation, internalQuery } from "./_generated/server";
@@ -75,6 +76,27 @@ export const classifyReply = internalAction({
       evidenceQuote: result.evidenceQuote ?? undefined,
       reason: result.reason,
       missing: result.missing,
+    });
+    return null;
+  },
+});
+
+// Runs once the retrier gives up or succeeds. A failure is recorded so the UI stops waiting.
+export const onAnalysisComplete = internalMutation({
+  args: onCompleteValidator,
+  returns: v.null(),
+  handler: async (ctx, { runId, result }) => {
+    if (result.type === "success") return null;
+    const reply = await ctx.db
+      .query("claimEvents")
+      .withIndex("by_analysisRunId", (q) => q.eq("analysisRunId", runId))
+      .first();
+    if (!reply) return null;
+    await ctx.db.insert("claimEvents", {
+      claimId: reply.claimId,
+      kind: "analysis_failed",
+      detail: "The reply could not be analyzed after 3 attempts. Read it yourself; the deadline still runs.",
+      replyEventId: reply._id,
     });
     return null;
   },

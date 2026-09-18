@@ -1054,3 +1054,126 @@
   gap: 12px;
   max-width: 420px;
 }
+
+/* ---------- Letter to the company ---------- */
+.block--letter {
+  grid-column: span 12;
+  animation-delay: 330ms;
+}
+
+.letter {
+  border-color: var(--rule-strong);
+}
+
+.letter .eyebrow {
+  color: var(--ink-3);
+}
+
+.letter__form {
+  grid-column: 1;
+  display: grid;
+  gap: var(--s-3);
+  margin-top: var(--s-2);
+}
+
+.letter__form > label:first-child {
+  display: grid;
+  gap: var(--s-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.letter__form input[type="email"] {
+  font: inherit;
+  font-weight: 400;
+  font-size: var(--text-base);
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  padding: var(--s-3);
+  transition: border-color 160ms var(--ease-out);
+}
+
+.letter__form input[type="email"]:hover {
+  border-color: var(--ink-3);
+}
+
+.letter__form input[type="email"]:focus-visible {
+  outline: none;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 1px var(--ink);
+}
+
+.letter__confirm {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--s-2);
+  align-items: start;
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.letter__confirm input {
+  margin: 3px 0 0;
+  accent-color: var(--ink);
+}
+
+.letter__form .btn--primary {
+  justify-self: start;
+}
+
+.letter__log {
+  grid-column: 1;
+  list-style: none;
+  margin: var(--s-2) 0 0;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+}
+
+.letter__log li {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto auto;
+  gap: var(--s-3);
+  align-items: center;
+  padding: var(--s-2) 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: var(--text-sm);
+}
+
+.letter__log li.is-ok svg {
+  color: var(--kept);
+}
+
+.letter__log li.is-bad,
+.letter__log li.is-bad svg {
+  color: var(--stamp);
+}
+
+.letter__status {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.letter__log time {
+  font-size: var(--text-xs);
+}
+
+.claim__side {
+  display: grid;
+  justify-items: end;
+  gap: var(--s-3);
+}
+
+.claim__resolve {
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .claim__side {
+    justify-items: start;
+  }
+}

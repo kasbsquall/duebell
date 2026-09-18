@@ -1,16 +1,8 @@
 /// <reference types="vite/client" />
-import { convexTest } from "convex-test";
 import { describe, expect, test } from "vitest";
 import { api, internal } from "./_generated/api";
-import schema from "./schema";
+import { signedIn } from "../test/convex";
 
-const modules = import.meta.glob("./**/*.ts");
-
-// Acts as a signed-in Convex Auth user: getAuthUserId reads the user id from the subject.
-async function signedIn(t = convexTest(schema, modules)) {
-  const userId = await t.run((ctx) => ctx.db.insert("users", {}));
-  return Object.assign(t.withIdentity({ subject: `${userId}|test-session` }), { raw: t });
-}
 
 
 async function setup() {
