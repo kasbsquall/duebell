@@ -17,7 +17,7 @@ The video is a real run in production on Sep 18, 2026. The company reply is a sa
 4. **OpenAI** classifies the reply as a real commitment, a resolution, or stalling. It quotes the exact sentence it relied on, and the quote is checked against the original email before it is shown.
 5. **Firecrawl** drives Indecopi's public sanctions registry (Indecopi is Peru's consumer protection agency) and brings back the company's sanction record, which OpenAI translates into plain English.
 6. If the company stalls or misses the deadline, Duebell drafts the filing for Indecopi in Spanish, with an English version for reference. You review it and submit it yourself.
-7. You can also put the complaint in writing: Duebell emails the company a formal follow-up in Spanish from its **AgentMail** inbox, after you confirm the address. The company's answer to that email comes back to the same claim and is classified like any other reply. Delivery status is shown live from the AgentMail component's outbox.
+7. You can also put the complaint in writing: Duebell emails the company a formal follow-up in Spanish from its **AgentMail** inbox, after you confirm the address. The company's answer to that email comes back to the same claim and is classified like any other reply. Delivery goes through the AgentMail API with the Convex action-retrier, and its status shows live on the claim.
 8. A daily **cron** posts a notice on every open claim with 3 or fewer business days left. When the company fixes the problem, you mark the claim resolved and the clock stops.
 
 Everything updates live in the browser through Convex queries.

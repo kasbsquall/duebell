@@ -1,19 +1,17 @@
-import { AgentMail } from "@agentmail/convex";
+import { onCompleteValidator } from "@convex-dev/action-retrier";
 import { ConvexError, v } from "convex/values";
-import { components } from "./_generated/api";
-import { mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
+import { internalAction, internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { buildLetter, isValidEmail, LETTER_MAX_PER_CLAIM, letterSubject } from "./lib/letter";
 import { enforceLimit } from "./lib/limits";
 import { requireOwnClaim } from "./lib/owner";
+import { retrier } from "./lib/retrier";
 
-const agentmail = new AgentMail(components.agentmail);
-
-// @agentmail/convex 0.1.0 types its ctx against an older Convex; runtime shape is the same.
-type AgentMailCtx = Parameters<typeof agentmail.sendMessage>[0];
+const AGENTMAIL_API = "https://api.agentmail.to/v0";
 
 // Emails the written follow-up to the company from Duebell's inbox. The user types the
 // address and confirms; nothing is sent without that. Replies come back to the same inbox
-// with the reference in the subject, so the webhook files them on this claim.
+// on the same thread, with the reference in the subject, so the webhook files them here.
 export const sendLetter = mutation({
   args: { claimId: v.id("claims"), to: v.string(), confirmed: v.boolean() },
   returns: v.null(),
@@ -23,8 +21,7 @@ export const sendLetter = mutation({
     const address = to.trim().toLowerCase();
     if (!isValidEmail(address)) throw new ConvexError("Enter one valid email address");
     if (claim.status === "resolved") throw new ConvexError("This claim is already resolved");
-    const inbox = process.env.AGENTMAIL_INBOX_ADDRESS;
-    if (!inbox) throw new ConvexError("Sending is not configured on this deployment");
+    if (!process.env.AGENTMAIL_INBOX_ADDRESS) throw new ConvexError("Sending is not configured on this deployment");
 
     const events = await ctx.db
       .query("claimEvents")
@@ -35,6 +32,44 @@ export const sendLetter = mutation({
     }
     await enforceLimit(ctx, "sendLetter", claim.ownerId!, "Sending letters");
 
+    const eventId = await ctx.db.insert("claimEvents", {
+      claimId,
+      kind: "letter_sent",
+      detail: `Written follow-up emailed to ${address}. Their reply lands on this claim.`,
+      to: address,
+      letterStatus: "pending",
+    });
+    const letterRunId = await retrier.run(
+      ctx,
+      internal.outbound.deliverLetter,
+      { eventId },
+      { onComplete: internal.outbound.onLetterComplete },
+    );
+    await ctx.db.patch("claimEvents", eventId, { letterRunId });
+    return null;
+  },
+});
+
+export const letterContext = internalQuery({
+  args: { eventId: v.id("claimEvents") },
+  handler: async (ctx, { eventId }) => {
+    const event = await ctx.db.get("claimEvents", eventId);
+    if (!event || event.kind !== "letter_sent" || !event.to) return null;
+    const claim = await ctx.db.get("claims", event.claimId);
+    if (!claim) return null;
+    return { event, claim };
+  },
+});
+
+// Sends through the AgentMail API. Retried by the action-retrier on network or 5xx errors.
+export const deliverLetter = internalAction({
+  args: { eventId: v.id("claimEvents") },
+  returns: v.object({ messageId: v.string(), threadId: v.string() }),
+  handler: async (ctx, { eventId }) => {
+    const context = await ctx.runQuery(internal.outbound.letterContext, { eventId });
+    if (!context) throw new Error("Letter not found");
+    const { event, claim } = context;
+    const inbox = process.env.AGENTMAIL_INBOX_ADDRESS!;
     const input = {
       companyName: claim.companyName,
       referenceCode: claim.referenceCode ?? "",
@@ -43,23 +78,45 @@ export const sendLetter = mutation({
       summary: claim.summary,
       overdue: claim.status === "overdue",
     };
-    const outboundId = await agentmail.sendMessage(ctx as unknown as AgentMailCtx, inbox, {
-      to: address,
-      subject: letterSubject(input),
-      text: buildLetter(input, "es"),
+    const res = await fetch(`${AGENTMAIL_API}/inboxes/${encodeURIComponent(inbox)}/messages/send`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.AGENTMAIL_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ to: event.to, subject: letterSubject(input), text: buildLetter(input, "es") }),
     });
-    await ctx.db.insert("claimEvents", {
-      claimId,
-      kind: "letter_sent",
-      detail: `Written follow-up emailed to ${address}. Their reply lands on this claim.`,
-      to: address,
-      outboundId,
-    });
+    if (!res.ok) throw new Error(`AgentMail send failed (${res.status}): ${(await res.text()).slice(0, 200)}`);
+    const body = (await res.json()) as { message_id?: string; thread_id?: string };
+    if (!body.message_id || !body.thread_id) throw new Error("AgentMail returned no message id");
+    return { messageId: body.message_id, threadId: body.thread_id };
+  },
+});
+
+export const onLetterComplete = internalMutation({
+  args: onCompleteValidator,
+  returns: v.null(),
+  handler: async (ctx, { runId, result }) => {
+    const event = await ctx.db
+      .query("claimEvents")
+      .withIndex("by_letterRunId", (q) => q.eq("letterRunId", runId))
+      .first();
+    if (!event) return null;
+    if (result.type !== "success") {
+      const error = result.type === "failed" ? result.error.slice(0, 300) : "Canceled";
+      await ctx.db.patch("claimEvents", event._id, { letterStatus: "failed", letterError: error });
+      return null;
+    }
+    const { messageId, threadId } = result.returnValue as { messageId: string; threadId: string };
+    await ctx.db.patch("claimEvents", event._id, { letterStatus: "sent", messageId: `sent:${messageId}` });
+    // The company's answer arrives on this thread; route it here even without the reference.
+    const claim = await ctx.db.get("claims", event.claimId);
+    if (claim && !claim.emailThreadId) await ctx.db.patch("claims", claim._id, { emailThreadId: threadId });
     return null;
   },
 });
 
-// Live delivery status of each letter, read from the AgentMail component's outbox.
+// Delivery status of each letter, live.
 export const letters = query({
   args: { claimId: v.id("claims") },
   handler: async (ctx, { claimId }) => {
@@ -68,21 +125,14 @@ export const letters = query({
       .query("claimEvents")
       .withIndex("by_claimId", (q) => q.eq("claimId", claimId))
       .take(200);
-    const sent = events.filter((e) => e.kind === "letter_sent" && e.outboundId);
-    return Promise.all(
-      sent.map(async (e) => {
-        const status = await agentmail.status(
-          ctx as unknown as Parameters<typeof agentmail.status>[0],
-          e.outboundId as Parameters<typeof agentmail.status>[1],
-        );
-        return {
-          eventId: e._id,
-          to: e.to ?? "",
-          sentAt: e._creationTime,
-          status: status?.status ?? "pending",
-          error: status?.errorMessage ?? null,
-        };
-      }),
-    );
+    return events
+      .filter((e) => e.kind === "letter_sent")
+      .map((e) => ({
+        eventId: e._id,
+        to: e.to ?? "",
+        sentAt: e._creationTime,
+        status: e.letterStatus ?? (e.outboundId ? "failed" : "pending"),
+        error: e.letterError ?? null,
+      }));
   },
 });

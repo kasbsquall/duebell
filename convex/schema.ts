@@ -86,11 +86,15 @@ export default defineSchema({
     missing: v.optional(v.array(v.string())),
     // Set on "reply_received": the action-retrier run that classifies it
     analysisRunId: v.optional(v.string()),
-    // Set on "letter_sent": recipient and the AgentMail component's outbound id
+    // Set on "letter_sent": recipient and delivery through the AgentMail API
     to: v.optional(v.string()),
-    outboundId: v.optional(v.string()),
+    outboundId: v.optional(v.string()), // legacy: early letters queued in the component outbox
+    letterStatus: v.optional(v.union(v.literal("pending"), v.literal("sent"), v.literal("failed"))),
+    letterError: v.optional(v.string()),
+    letterRunId: v.optional(v.string()),
   })
     .index("by_claimId", ["claimId"])
     .index("by_messageId", ["messageId"])
-    .index("by_analysisRunId", ["analysisRunId"]),
+    .index("by_analysisRunId", ["analysisRunId"])
+    .index("by_letterRunId", ["letterRunId"]),
 });

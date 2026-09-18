@@ -66,7 +66,7 @@ describe("letter", () => {
 });
 
 describe("outbound.sendLetter", () => {
-  test("queues the letter in the AgentMail outbox and logs it on the claim", async () => {
+  test("logs the letter on the claim as pending until AgentMail answers", async () => {
     const { t, claimId } = await withClaim();
     await t.mutation(api.outbound.sendLetter, { claimId, to: " Reclamos@Tienda.pe ", confirmed: true });
     const sent = (await events(t, claimId)).filter((e) => e.kind === "letter_sent");
@@ -75,6 +75,35 @@ describe("outbound.sendLetter", () => {
     const letters = await t.query(api.outbound.letters, { claimId });
     expect(letters).toHaveLength(1);
     expect(letters[0].to).toBe("reclamos@tienda.pe");
+    expect(letters[0].status).toBe("pending");
+  });
+
+  test("marks the letter sent and adopts its thread once AgentMail accepts it", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (String(url).includes("api.agentmail.to")) {
+        return new Response(JSON.stringify({ message_id: "m-1", thread_id: "t-1" }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      }
+      throw new Error("network disabled in tests");
+    }));
+    const { t, claimId } = await withClaim();
+    await t.mutation(api.outbound.sendLetter, { claimId, to: "a@b.pe", confirmed: true });
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
+    const [letter] = await t.query(api.outbound.letters, { claimId });
+    expect(letter.status).toBe("sent");
+    const claim = await t.query(api.claims.get, { claimId });
+    expect(claim!.emailThreadId).toBe("t-1");
+  });
+
+  test("marks the letter failed after the retrier gives up", async () => {
+    const { t, claimId } = await withClaim();
+    await t.mutation(api.outbound.sendLetter, { claimId, to: "a@b.pe", confirmed: true });
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
+    const [letter] = await t.query(api.outbound.letters, { claimId });
+    expect(letter.status).toBe("failed");
+    expect(letter.error).toMatch(/network disabled/);
   });
 
   test("refuses without confirmation or with a bad address", async () => {
