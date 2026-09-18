@@ -36,7 +36,7 @@ Everything updates live in the browser through Convex queries.
 
 ## Limits
 
-- There is no sign-in yet, so every visitor sees every claim. Do not put real personal data in the live demo.
+- Sign-in is anonymous: each browser gets its own Convex Auth session on arrival and only sees the complaints it filed. Clearing the browser's storage loses access to them. Do not put real personal data in the live demo.
 - Peru only. National holidays for 2026 and 2027 are hardcoded (`convex/lib/businessDays.ts`).
 - Indecopi's sanctions registry has no API. Firecrawl drives the public site, so a redesign of that site can break the lookup until the parser is updated.
 - The recorded case uses a sample company reply and compresses the 15 business days. The sanctions record, the verdict and the quote in it are real output.

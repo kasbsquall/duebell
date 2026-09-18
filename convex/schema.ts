@@ -1,3 +1,4 @@
+import { authTables } from "@convex-dev/auth/server";
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
@@ -19,6 +20,8 @@ export const eventKind = v.union(
 );
 
 export default defineSchema({
+  ...authTables,
+
   sanctionChecks: defineTable({
     claimId: v.id("claims"),
     status: v.union(v.literal("pending"), v.literal("found"), v.literal("clean"), v.literal("failed")),
@@ -48,6 +51,7 @@ export default defineSchema({
   }).index("by_claimId", ["claimId"]),
 
   claims: defineTable({
+    ownerId: v.optional(v.id("users")), // Convex Auth user who filed it
     companyName: v.string(),
     companyRuc: v.optional(v.string()),
     summary: v.string(),
@@ -58,6 +62,7 @@ export default defineSchema({
     referenceCode: v.optional(v.string()), // e.g. RC-7K2P, used in email subjects
     emailThreadId: v.optional(v.string()), // AgentMail thread once the company replies
   })
+    .index("by_ownerId", ["ownerId"])
     .index("by_status", ["status"])
     .index("by_referenceCode", ["referenceCode"])
     .index("by_emailThreadId", ["emailThreadId"]),

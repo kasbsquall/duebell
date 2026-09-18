@@ -4,6 +4,7 @@ import { internal } from "./_generated/api";
 import { internalMutation, mutation, type MutationCtx } from "./_generated/server";
 import { SAMPLE_STALLING_REPLY } from "./lib/sampleReply";
 import { extractReference } from "./lib/reference";
+import { requireOwnClaim } from "./lib/owner";
 
 const MAX_REPLY_CHARS = 8000;
 const SIMULATED_PREFIX = "simulated:";
@@ -95,8 +96,7 @@ export const simulateReply = mutation({
   args: { claimId: v.id("claims") },
   returns: v.null(),
   handler: async (ctx, { claimId }) => {
-    const claim = await ctx.db.get("claims", claimId);
-    if (!claim) throw new ConvexError("Claim not found");
+    const claim = await requireOwnClaim(ctx, claimId);
     if (claim.status === "resolved") throw new ConvexError("This claim is already resolved");
     const messageId = `${SIMULATED_PREFIX}${claimId}`;
     const used = await ctx.db

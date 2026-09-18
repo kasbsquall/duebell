@@ -9,6 +9,7 @@
  */
 
 import type * as admin from "../admin.js";
+import type * as auth from "../auth.js";
 import type * as claims from "../claims.js";
 import type * as classify from "../classify.js";
 import type * as config from "../config.js";
@@ -16,6 +17,7 @@ import type * as http from "../http.js";
 import type * as inbound from "../inbound.js";
 import type * as lib_businessDays from "../lib/businessDays.js";
 import type * as lib_classification from "../lib/classification.js";
+import type * as lib_owner from "../lib/owner.js";
 import type * as lib_reference from "../lib/reference.js";
 import type * as lib_sampleReply from "../lib/sampleReply.js";
 import type * as lib_sanctions from "../lib/sanctions.js";
@@ -30,6 +32,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   admin: typeof admin;
+  auth: typeof auth;
   claims: typeof claims;
   classify: typeof classify;
   config: typeof config;
@@ -37,6 +40,7 @@ declare const fullApi: ApiFromModules<{
   inbound: typeof inbound;
   "lib/businessDays": typeof lib_businessDays;
   "lib/classification": typeof lib_classification;
+  "lib/owner": typeof lib_owner;
   "lib/reference": typeof lib_reference;
   "lib/sampleReply": typeof lib_sampleReply;
   "lib/sanctions": typeof lib_sanctions;

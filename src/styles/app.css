@@ -1039,3 +1039,18 @@
     height: 28px;
   }
 }
+
+.docket__private {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 2px 4px;
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+}
+
+.session-start {
+  display: grid;
+  gap: 12px;
+  max-width: 420px;
+}

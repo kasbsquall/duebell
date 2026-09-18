@@ -7,12 +7,12 @@
 - **Repo:** https://github.com/kasbsquall/duebell
 - **Frontend:** Convex static hosting
 - **Convex deployment:** https://sleek-grouse-640.convex.cloud
-- **Components:** @agentmail/convex, @convex-dev/static-hosting
+- **Components:** @agentmail/convex, @convex-dev/static-hosting, @convex-dev/auth
 - **Convex features:** schema, indexes, queries, mutations, actions, internal functions, HTTP actions, scheduled functions, realtime queries, registered components
-- **Auth:** none
+- **Auth:** Convex Auth (anonymous sessions)
 - **AI models:** gpt-5.4-mini-2026-03-17
 - **Started:** 2026-09-18T13:25:00Z
-- **Last updated:** 2026-09-18T16:20:00Z
+- **Last updated:** 2026-09-18T20:14:35Z
 
 ## Log
 
@@ -57,3 +57,6 @@ The sanctions card now shows the lookup at work while Firecrawl reads Indecopi's
 ### 2026-09-18 - demo video
 
 Recorded and edited the demo video: https://youtu.be/dViTfHukVrc (1:36). All product footage is a 2K recording of one run in production (case RC-PJNS), with `npx convex logs --prod --success` streaming during the run so the logs on screen belong to the same case. The 3D stamp, the business-day bars and the end card are rendered with Remotion and three.js; voiceover by ElevenLabs, captions timed with ElevenLabs forced alignment. The live UI got several fixes before recording: service logos and a clearer done state in the replay rail, English as the default filing view with Spanish marked as the version that is filed, a glossary of Peruvian terms, a working "How it works" link, and optional per-chapter narration in the recorded case (`src/demo/`, `src/components/NextStep.tsx`, `public/narration/`).
+
+### 2026-09-18 - private sessions
+Added Convex Auth with anonymous sign-in. The live app signs each visitor in on arrival, so judges still open it without a form, and every claim is stored with its owner. The claim list, claim page, demo time jump, simulated reply and sanctions refresh all check ownership on the server; someone else's claim is reported as not found. Inbound email still reaches the right claim through the webhook, which runs server-side. Two new tests cover a second user trying to read or change a claim and an unsigned visitor trying to file one; 45 tests pass. Verified in production with two separate browser sessions: the second session saw no claims and could not open the first one's claim by URL (`convex/auth.ts`, `convex/auth.config.ts`, `convex/lib/owner.ts`, `convex/claims.ts`, `src/App.tsx`).

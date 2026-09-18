@@ -6,8 +6,15 @@ import schema from "./schema";
 
 const modules = import.meta.glob("./**/*.ts");
 
+// Acts as a signed-in Convex Auth user: getAuthUserId reads the user id from the subject.
+async function signedIn(t = convexTest(schema, modules)) {
+  const userId = await t.run((ctx) => ctx.db.insert("users", {}));
+  return Object.assign(t.withIdentity({ subject: `${userId}|test-session` }), { raw: t });
+}
+
+
 async function setup() {
-  const t = convexTest(schema, modules);
+  const t = await signedIn();
   const claimId = await t.mutation(api.claims.create, {
     companyName: "Tienda Ejemplo S.A.C.",
     summary: "Refrigerator never delivered.",

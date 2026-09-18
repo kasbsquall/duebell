@@ -1,4 +1,5 @@
-import { useQuery } from "convex/react";
+import { useAuthActions } from "@convex-dev/auth/react";
+import { useConvexAuth, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
 import { api } from "../convex/_generated/api";
 import type { Id } from "../convex/_generated/dataModel";
@@ -25,6 +26,14 @@ export default function App() {
   const config = useQuery(api.config.get);
   const [route, setRoute] = useState<Route>(readHash);
   const selectedId = route.page === "live" ? route.claimId : null;
+  const { isAuthenticated, isLoading } = useConvexAuth();
+  const { signIn } = useAuthActions();
+
+  // The live app signs each visitor in anonymously on arrival: no form for judges,
+  // and every claim belongs to the session that created it.
+  useEffect(() => {
+    if (route.page === "live" && !isLoading && !isAuthenticated) void signIn("anonymous");
+  }, [route.page, isLoading, isAuthenticated, signIn]);
 
   useEffect(() => {
     const onHash = () => {
@@ -62,7 +71,12 @@ export default function App() {
       <div className="layout">
         <ClaimList claims={claims} selectedId={selectedId} onSelect={select} onNew={() => select(null)} />
         <main className="stage">
-          {selectedId ? (
+          {!isAuthenticated ? (
+            <div className="session-start" aria-busy="true">
+              <div className="skeleton skeleton--row" />
+              <p className="muted">Starting your private session…</p>
+            </div>
+          ) : selectedId ? (
             <ClaimView claimId={selectedId} inboxAddress={config?.inboxAddress ?? ""} />
           ) : (
             <NewClaim onCreated={select} />

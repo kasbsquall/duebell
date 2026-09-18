@@ -1,3 +1,4 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
@@ -11,6 +12,7 @@ import {
   subtractBusinessDays,
 } from "./lib/businessDays";
 import { generateReference } from "./lib/reference";
+import { requireOwnClaim, requireUser } from "./lib/owner";
 import { startSanctionsLookup } from "./sanctions";
 
 const MAX_TEXT = 2000;
@@ -55,9 +57,11 @@ export const create = mutation({
   },
   returns: v.id("claims"),
   handler: async (ctx, args) => {
+    const ownerId = await requireUser(ctx);
     const filedDate = limaDate(Date.now());
     const deadlineDate = addBusinessDays(filedDate, RESPONSE_DEADLINE_BUSINESS_DAYS);
     const claimId = await ctx.db.insert("claims", {
+      ownerId,
       companyName: requireText(args.companyName, "Company name", 200),
       companyRuc: args.companyRuc?.trim() || undefined,
       summary: requireText(args.summary, "Summary"),
@@ -81,7 +85,13 @@ export const create = mutation({
 export const list = query({
   args: {},
   handler: async (ctx) => {
-    const claims = await ctx.db.query("claims").order("desc").take(50);
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return [];
+    const claims = await ctx.db
+      .query("claims")
+      .withIndex("by_ownerId", (q) => q.eq("ownerId", userId))
+      .order("desc")
+      .take(50);
     const today = limaDate(Date.now());
     return claims.map((claim) => ({
       ...claim,
@@ -93,8 +103,9 @@ export const list = query({
 export const get = query({
   args: { claimId: v.id("claims") },
   handler: async (ctx, { claimId }) => {
+    const userId = await getAuthUserId(ctx);
     const claim = await ctx.db.get("claims", claimId);
-    if (!claim) return null;
+    if (!claim || !userId || claim.ownerId !== userId) return null;
     const events = await ctx.db
       .query("claimEvents")
       .withIndex("by_claimId", (q) => q.eq("claimId", claimId))
@@ -138,8 +149,7 @@ export const demoFastForward = mutation({
     if (!Number.isInteger(businessDays) || businessDays < 1 || businessDays > 30) {
       throw new Error("businessDays must be an integer between 1 and 30");
     }
-    const claim = await ctx.db.get("claims", claimId);
-    if (!claim) throw new Error("Claim not found");
+    const claim = await requireOwnClaim(ctx, claimId);
 
     const today = limaDate(Date.now());
     const elapsed = businessDaysElapsed(claim.filedDate, today);

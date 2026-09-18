@@ -1,4 +1,4 @@
-import { Plus } from "@phosphor-icons/react";
+import { LockSimple, Plus } from "@phosphor-icons/react";
 import type { Id } from "../../convex/_generated/dataModel";
 import { formatDate, isAlarm, STATUS_LABEL, type ClaimSummary } from "../lib/format";
 
@@ -23,6 +23,11 @@ export function ClaimList({ claims, selectedId, onSelect, onNew }: ClaimListProp
           <div className="skeleton skeleton--row" />
         </div>
       )}
+
+      <p className="docket__private">
+        <LockSimple size={14} weight="light" aria-hidden />
+        Private session. Only this browser sees your complaints.
+      </p>
 
       {claims?.length === 0 && <p className="muted docket__empty">No complaints yet.</p>}
 

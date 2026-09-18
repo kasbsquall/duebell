@@ -28,7 +28,7 @@ export function ClaimView({ claimId, inboxAddress }: ClaimViewProps) {
     );
   }
   if (claim === null) {
-    return <p className="muted">This claim no longer exists.</p>;
+    return <p className="muted">This complaint is not in your session. Complaints are private to the browser that filed them.</p>;
   }
 
   const replies = claim.events.filter((e) => e.kind === "reply_received");

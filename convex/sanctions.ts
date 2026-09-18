@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { internalAction, internalMutation, mutation, type MutationCtx } from "./_generated/server";
+import { requireOwnClaim } from "./lib/owner";
 import { parseSanctionsDetail, parseSearchResults, pickBestMatch } from "./lib/sanctions";
 import { translateOffenses } from "./lib/translate";
 
@@ -62,8 +63,7 @@ export const refresh = mutation({
   args: { claimId: v.id("claims"), ruc: v.optional(v.string()) },
   returns: v.null(),
   handler: async (ctx, { claimId, ruc }) => {
-    const claim = await ctx.db.get("claims", claimId);
-    if (!claim) throw new Error("Claim not found");
+    const claim = await requireOwnClaim(ctx, claimId);
     if (ruc !== undefined) {
       if (!/^\d{11}$/.test(ruc)) throw new Error("RUC must have 11 digits");
       await ctx.db.patch("claims", claimId, { companyRuc: ruc });
