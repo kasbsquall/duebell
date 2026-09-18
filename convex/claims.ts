@@ -11,6 +11,7 @@ import {
   subtractBusinessDays,
 } from "./lib/businessDays";
 import { generateReference } from "./lib/reference";
+import { startSanctionsLookup } from "./sanctions";
 
 const MAX_TEXT = 2000;
 
@@ -72,6 +73,7 @@ export const create = mutation({
       kind: "filed",
       detail: `Complaint filed. The company must answer by ${deadlineDate}.`,
     });
+    await startSanctionsLookup(ctx, claimId, args.companyRuc?.trim() || args.companyName.trim());
     return claimId;
   },
 });
@@ -92,8 +94,13 @@ export const get = query({
       .query("claimEvents")
       .withIndex("by_claimId", (q) => q.eq("claimId", claimId))
       .take(200);
+    const sanctions = await ctx.db
+      .query("sanctionChecks")
+      .withIndex("by_claimId", (q) => q.eq("claimId", claimId))
+      .first();
     return {
       ...claim,
+      sanctions,
       businessDaysElapsed: businessDaysElapsed(claim.filedDate, limaDate(Date.now())),
       deadlineBusinessDays: RESPONSE_DEADLINE_BUSINESS_DAYS,
       events,

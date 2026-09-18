@@ -19,6 +19,33 @@ export const eventKind = v.union(
 );
 
 export default defineSchema({
+  sanctionChecks: defineTable({
+    claimId: v.id("claims"),
+    status: v.union(v.literal("pending"), v.literal("found"), v.literal("clean"), v.literal("failed")),
+    query: v.string(),
+    legalName: v.optional(v.string()),
+    ruc: v.optional(v.string()),
+    totalSanctions: v.optional(v.number()),
+    totalFineUit: v.optional(v.number()),
+    periodFrom: v.optional(v.string()),
+    periodTo: v.optional(v.string()),
+    recent: v.optional(
+      v.array(
+        v.object({
+          year: v.number(),
+          matter: v.string(),
+          offense: v.string(),
+          resolution: v.string(),
+          finalDate: v.string(),
+          fineUit: v.number(),
+        }),
+      ),
+    ),
+    complaintHandlingCount: v.optional(v.number()),
+    candidates: v.optional(v.array(v.object({ legalName: v.string(), ruc: v.string() }))),
+    error: v.optional(v.string()),
+  }).index("by_claimId", ["claimId"]),
+
   claims: defineTable({
     companyName: v.string(),
     companyRuc: v.optional(v.string()),

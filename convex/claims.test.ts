@@ -10,12 +10,17 @@ const modules = import.meta.glob("./**/*.ts");
 const NOW = Date.UTC(2026, 8, 18, 15, 0);
 
 beforeEach(() => {
+  // Keep background lookups (Firecrawl) offline in unit tests.
+  vi.stubGlobal("fetch", vi.fn(async () => {
+    throw new Error("network disabled in tests");
+  }));
   vi.useFakeTimers();
   vi.setSystemTime(NOW);
 });
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.unstubAllGlobals();
 });
 
 const newClaim = {
