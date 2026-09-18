@@ -1,10 +1,12 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
-import { internalMutation, type MutationCtx } from "./_generated/server";
+import { internalMutation, mutation, type MutationCtx } from "./_generated/server";
+import { SAMPLE_STALLING_REPLY } from "./lib/sampleReply";
 import { extractReference } from "./lib/reference";
 
 const MAX_REPLY_CHARS = 8000;
+const SIMULATED_PREFIX = "simulated:";
 
 interface InboundMessage {
   messageId: string;
@@ -49,6 +51,29 @@ async function findClaim(ctx: MutationCtx, msg: InboundMessage): Promise<Doc<"cl
     .first();
 }
 
+// Stores a reply on its claim once (deduplicated by message id) and queues classification.
+async function storeReply(ctx: MutationCtx, claim: Doc<"claims">, msg: InboundMessage): Promise<void> {
+  const alreadyStored = await ctx.db
+    .query("claimEvents")
+    .withIndex("by_messageId", (q) => q.eq("messageId", msg.messageId))
+    .first();
+  if (alreadyStored) return;
+
+  // A simulated reply must not claim the thread a real company reply will arrive on.
+  if (!claim.emailThreadId && !msg.messageId.startsWith(SIMULATED_PREFIX)) {
+    await ctx.db.patch("claims", claim._id, { emailThreadId: msg.threadId });
+  }
+  const replyEventId = await ctx.db.insert("claimEvents", {
+    claimId: claim._id,
+    kind: "reply_received",
+    detail: msg.text.trim().slice(0, MAX_REPLY_CHARS) || "(empty message)",
+    from: msg.from,
+    subject: msg.subject,
+    messageId: msg.messageId,
+  });
+  await ctx.scheduler.runAfter(0, internal.classify.classifyReply, { replyEventId });
+}
+
 export const onMessageReceived = internalMutation({
   args: { message: v.any(), thread: v.any(), eventId: v.string() },
   returns: v.null(),
@@ -59,24 +84,33 @@ export const onMessageReceived = internalMutation({
     const claim = await findClaim(ctx, msg);
     if (!claim) return null;
 
-    const alreadyStored = await ctx.db
-      .query("claimEvents")
-      .withIndex("by_messageId", (q) => q.eq("messageId", msg.messageId))
-      .first();
-    if (alreadyStored) return null;
+    await storeReply(ctx, claim, msg);
+    return null;
+  },
+});
 
-    if (!claim.emailThreadId) {
-      await ctx.db.patch("claims", claim._id, { emailThreadId: msg.threadId });
-    }
-    const replyEventId = await ctx.db.insert("claimEvents", {
-      claimId: claim._id,
-      kind: "reply_received",
-      detail: msg.text.trim().slice(0, MAX_REPLY_CHARS) || "(empty message)",
-      from: msg.from,
-      subject: msg.subject,
-      messageId: msg.messageId,
+// Lets a visitor see the full loop without sending an email. The sample reply goes through
+// the same storage and classification path as a real webhook delivery, once per claim.
+export const simulateReply = mutation({
+  args: { claimId: v.id("claims") },
+  returns: v.null(),
+  handler: async (ctx, { claimId }) => {
+    const claim = await ctx.db.get("claims", claimId);
+    if (!claim) throw new ConvexError("Claim not found");
+    if (claim.status === "resolved") throw new ConvexError("This claim is already resolved");
+    const messageId = `${SIMULATED_PREFIX}${claimId}`;
+    const used = await ctx.db
+      .query("claimEvents")
+      .withIndex("by_messageId", (q) => q.eq("messageId", messageId))
+      .first();
+    if (used) throw new ConvexError("The sample reply was already used on this claim");
+    await storeReply(ctx, claim, {
+      messageId,
+      threadId: messageId,
+      from: "the company (simulated)",
+      subject: `Re: Complaint [Ref ${claim.referenceCode}]`,
+      text: SAMPLE_STALLING_REPLY,
     });
-    await ctx.scheduler.runAfter(0, internal.classify.classifyReply, { replyEventId });
     return null;
   },
 });

@@ -82,3 +82,38 @@ describe("inbound.onMessageReceived", () => {
     expect(claim!.events.some((e) => e.kind === "reply_received")).toBe(false);
   });
 });
+
+describe("inbound.simulateReply", () => {
+  test("stores the sample reply through the same path as a real one", async () => {
+    const { t, claimId } = await setup();
+    await t.mutation(api.inbound.simulateReply, { claimId });
+
+    const claim = await t.query(api.claims.get, { claimId });
+    const reply = claim!.events.find((e) => e.kind === "reply_received");
+    expect(reply?.detail).toContain("currently reviewing your case");
+    expect(reply?.from).toBe("the company (simulated)");
+  });
+
+  test("can only be used once per claim", async () => {
+    const { t, claimId } = await setup();
+    await t.mutation(api.inbound.simulateReply, { claimId });
+    await expect(t.mutation(api.inbound.simulateReply, { claimId })).rejects.toThrow(/already used/);
+
+    const claim = await t.query(api.claims.get, { claimId });
+    expect(claim!.events.filter((e) => e.kind === "reply_received")).toHaveLength(1);
+  });
+
+  test("leaves the thread free for the company's real reply", async () => {
+    const { t, claimId, reference } = await setup();
+    await t.mutation(api.inbound.simulateReply, { claimId });
+    await t.mutation(internal.inbound.onMessageReceived, {
+      message: webhookMessage({ subject: `Re: complaint [Ref ${reference}]` }),
+      thread: {},
+      eventId: "evt-1",
+    });
+
+    const claim = await t.query(api.claims.get, { claimId });
+    expect(claim!.emailThreadId).toBe("thread-1");
+    expect(claim!.events.filter((e) => e.kind === "reply_received")).toHaveLength(2);
+  });
+});

@@ -8,11 +8,11 @@
 - **Frontend:** Convex static hosting
 - **Convex deployment:** https://sleek-grouse-640.convex.cloud
 - **Components:** @agentmail/convex, @convex-dev/static-hosting
-- **Convex features:** schema, indexes, queries, mutations, actions, internal functions, HTTP actions, scheduled functions, realtime queries
+- **Convex features:** schema, indexes, queries, mutations, actions, internal functions, HTTP actions, scheduled functions, realtime queries, registered components
 - **Auth:** none
 - **AI models:** gpt-5.4-mini-2026-03-17
 - **Started:** 2026-09-18T13:25:00Z
-- **Last updated:** 2026-09-18T15:30:00Z
+- **Last updated:** 2026-09-18T15:50:00Z
 
 ## Log
 
@@ -43,5 +43,10 @@ Added the README, the design system, and this build log (`README.md`, `docs/desi
 ### 2026-09-18 - production
 Deployed backend and frontend to the production Convex deployment with its own signed AgentMail webhook. Verified end to end on production: a real reply sent to the case inbox was routed to its claim and classified as stalling (0.98), and the Firecrawl sanctions lookup returned the company's record with English offense labels.
 
-### 2026-09-18 - working tree
+### 2026-09-18 - 41447f1
 Added a recorded case on the home page: a 44 second, self-playing replay of a real run on the dev deployment (sanctions lookup, reply classification, deadline, filing), with chapters labelled by the system that produced each step and an on-screen note about what is compressed. The live app moved to its own route. Visual pass across both views: ink clock block, chapter rail, stamp animations, double-bezel panels (`src/demo/`, `src/styles/demo.css`, `src/lib/draft.ts`).
+
+Evidence for the recorded case: a full run on the dev deployment on 2026-09-18 (reference RC-V6ZQ). Firecrawl returned 150 sanctions and 41.7 UIT in fines for SAGA FALABELLA S A (RUC 20100128056). OpenAI classified the sample reply as stalling with 0.99 confidence and quoted "Your complaint has been forwarded to the corresponding area and our team is currently reviewing your case.", which the quote check found in the email. The deadline check then marked the claim overdue. A first run was discarded because its sample text dated the jacket return after the filing date.
+
+### 2026-09-18 - working tree
+Visitors can now see the whole loop without sending an email. **Simulate the company's reply** delivers a sample non-answer through the same storage and classification path as a signed AgentMail webhook, at most once per claim, and never takes over the thread a real reply will arrive on. Verified in the browser on dev: sample complaint created, simulated reply classified as stalling at 99% within seconds, button disabled afterwards. Three new tests cover the once-per-claim rule and thread handling; 43 tests pass. The home page now states the outcome of the recorded case before it plays, and the README gained a 30 second walkthrough, the AI safeguards, and a limits section (`convex/inbound.ts`, `convex/lib/sampleReply.ts`, `src/components/ReplyChannel.tsx`, `src/demo/DemoPage.tsx`, `README.md`).

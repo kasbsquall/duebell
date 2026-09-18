@@ -15,9 +15,27 @@ In Peru, a company must answer a formal consumer complaint within **15 business 
 
 Everything updates live in the browser through Convex queries.
 
-## Try it
+## Try it in 30 seconds
 
-Open the live app, click **Try it with a sample complaint**, then **Reply as the company**. Your own email client opens with a typical non-answer. Send it and watch the page classify it. Use **Jump past the deadline** to see what happens when the company runs out of time.
+1. Open the live app. The home page plays a **recorded case**: a 44 second replay of a real run, from filing to the drafted Indecopi filing. No clicks needed.
+2. Click **Try it live**, then **Try it with a sample complaint**. The clock starts and Firecrawl begins pulling the company's sanction record.
+3. Click **Simulate the company's reply**. A typical non-answer goes through the same handler a real email uses, and OpenAI classifies it within seconds. You can also send a real reply from your own mail client with **Send a real one by email**.
+4. Click **Jump past the deadline** to see the scheduled deadline check fire and the filing appear.
+
+## How the AI is kept honest
+
+- OpenAI answers with a strict JSON schema: verdict, confidence, the sentence it relied on, a reason, and what a real answer still lacks.
+- The quoted sentence is checked against the original email before it is shown. A quote that does not appear in the reply is discarded (`convex/lib/classification.ts`).
+- The model never moves the clock. Deadlines are computed in TypeScript from Lima business days, and a missed deadline stays missed unless the company actually resolves the case.
+- Offense names from Indecopi are translated for display only; the Spanish original is kept.
+
+## Limits
+
+- There is no sign-in yet, so every visitor sees every claim. Do not put real personal data in the live demo.
+- Peru only. National holidays for 2026 and 2027 are hardcoded (`convex/lib/businessDays.ts`).
+- Indecopi's sanctions registry has no API. Firecrawl drives the public site, so a redesign of that site can break the lookup until the parser is updated.
+- The recorded case uses a sample company reply and compresses the 15 business days. The sanctions record, the verdict and the quote in it are real output.
+- The simulated reply works once per claim. Duebell drafts the Indecopi filing but never submits it for you.
 
 ## Stack
 

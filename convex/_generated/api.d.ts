@@ -17,6 +17,7 @@ import type * as inbound from "../inbound.js";
 import type * as lib_businessDays from "../lib/businessDays.js";
 import type * as lib_classification from "../lib/classification.js";
 import type * as lib_reference from "../lib/reference.js";
+import type * as lib_sampleReply from "../lib/sampleReply.js";
 import type * as lib_sanctions from "../lib/sanctions.js";
 import type * as lib_translate from "../lib/translate.js";
 import type * as sanctions from "../sanctions.js";
@@ -37,6 +38,7 @@ declare const fullApi: ApiFromModules<{
   "lib/businessDays": typeof lib_businessDays;
   "lib/classification": typeof lib_classification;
   "lib/reference": typeof lib_reference;
+  "lib/sampleReply": typeof lib_sampleReply;
   "lib/sanctions": typeof lib_sanctions;
   "lib/translate": typeof lib_translate;
   sanctions: typeof sanctions;

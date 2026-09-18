@@ -1,4 +1,14 @@
-import { ArrowUpRight, CalendarBlank, EnvelopeSimple, MagnifyingGlass, Scales } from "@phosphor-icons/react";
+import {
+  ArrowUpRight,
+  CalendarBlank,
+  EnvelopeSimple,
+  Gavel,
+  HourglassSimpleLow,
+  MagnifyingGlass,
+  Scales,
+} from "@phosphor-icons/react";
+import { formatDate } from "../lib/format";
+import { CASE } from "./DemoCards";
 import { DemoPlayer } from "./DemoPlayer";
 
 const STEPS = [
@@ -42,8 +52,25 @@ export function DemoPage() {
           <a className="cta cta--ghost" href="#how">
             How it works
           </a>
-          <p className="hero__hint">The recorded case below plays by itself in 44 seconds.</p>
         </div>
+        <ul className="outcome" aria-label="What happened in the recorded case">
+          <li>
+            <Scales size={18} weight="light" aria-hidden />
+            <span className="num outcome__fig">{CASE.sanctions.totalSanctions}</span> prior Indecopi sanctions found
+          </li>
+          <li>
+            <MagnifyingGlass size={18} weight="light" aria-hidden />
+            Reply flagged as <strong>stalling</strong> <span className="num">({CASE.verdict.confidence.toFixed(2)})</span>
+          </li>
+          <li>
+            <HourglassSimpleLow size={18} weight="light" aria-hidden />
+            Deadline missed <span className="num">{formatDate(CASE.deadlineDate)}</span>
+          </li>
+          <li>
+            <Gavel size={18} weight="light" aria-hidden />
+            Indecopi filing drafted in Spanish
+          </li>
+        </ul>
       </section>
 
       <DemoPlayer />
