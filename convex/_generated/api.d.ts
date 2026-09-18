@@ -9,7 +9,10 @@
  */
 
 import type * as claims from "../claims.js";
+import type * as http from "../http.js";
+import type * as inbound from "../inbound.js";
 import type * as lib_businessDays from "../lib/businessDays.js";
+import type * as lib_reference from "../lib/reference.js";
 import type * as probe from "../probe.js";
 
 import type {
@@ -20,7 +23,10 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   claims: typeof claims;
+  http: typeof http;
+  inbound: typeof inbound;
   "lib/businessDays": typeof lib_businessDays;
+  "lib/reference": typeof lib_reference;
   probe: typeof probe;
 }>;
 
@@ -50,4 +56,6 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  agentmail: import("@agentmail/convex/_generated/component.js").ComponentApi<"agentmail">;
+};

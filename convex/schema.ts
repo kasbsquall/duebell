@@ -27,11 +27,21 @@ export default defineSchema({
     deadlineDate: v.string(), // Lima date of the 15th business day
     status: claimStatus,
     deadlineJobId: v.optional(v.id("_scheduled_functions")),
-  }).index("by_status", ["status"]),
+    referenceCode: v.optional(v.string()), // e.g. RC-7K2P, used in email subjects
+    emailThreadId: v.optional(v.string()), // AgentMail thread once the company replies
+  })
+    .index("by_status", ["status"])
+    .index("by_referenceCode", ["referenceCode"])
+    .index("by_emailThreadId", ["emailThreadId"]),
 
   claimEvents: defineTable({
     claimId: v.id("claims"),
     kind: eventKind,
     detail: v.string(),
-  }).index("by_claimId", ["claimId"]),
+    from: v.optional(v.string()),
+    subject: v.optional(v.string()),
+    messageId: v.optional(v.string()),
+  })
+    .index("by_claimId", ["claimId"])
+    .index("by_messageId", ["messageId"]),
 });

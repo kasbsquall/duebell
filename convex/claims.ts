@@ -10,6 +10,7 @@ import {
   RESPONSE_DEADLINE_BUSINESS_DAYS,
   subtractBusinessDays,
 } from "./lib/businessDays";
+import { generateReference } from "./lib/reference";
 
 const MAX_TEXT = 2000;
 
@@ -33,6 +34,18 @@ async function scheduleDeadline(
   });
 }
 
+async function uniqueReference(ctx: MutationCtx): Promise<string> {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const code = generateReference();
+    const taken = await ctx.db
+      .query("claims")
+      .withIndex("by_referenceCode", (q) => q.eq("referenceCode", code))
+      .first();
+    if (!taken) return code;
+  }
+  throw new Error("Could not allocate a claim reference");
+}
+
 export const create = mutation({
   args: {
     companyName: v.string(),
@@ -50,6 +63,7 @@ export const create = mutation({
       filedDate,
       deadlineDate,
       status: "awaiting_response",
+      referenceCode: await uniqueReference(ctx),
     });
     const deadlineJobId = await scheduleDeadline(ctx, claimId, deadlineDate);
     await ctx.db.patch("claims", claimId, { deadlineJobId });
