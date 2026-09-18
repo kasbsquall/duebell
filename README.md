@@ -42,6 +42,10 @@ Everything updates live in the browser through Convex queries.
 - The recorded case uses a sample company reply and compresses the 15 business days. The sanctions record, the verdict and the quote in it are real output.
 - The simulated reply works once per claim. Duebell drafts the Indecopi filing but never submits it for you.
 
+## Beyond Peru
+
+Duebell is built for Peru, and the country-specific parts are kept small. The 15 business day rule and the holiday calendar live in `convex/lib/businessDays.ts`, the public sanctions lookup in `convex/sanctions.ts`, and the filing template in `src/lib/draft.ts`. Supporting another country means supplying its response deadline, its holidays, its public enforcement registry and its filing format; the inbox, the reply classification and the scheduled deadline check stay the same.
+
 ## Stack
 
 | Piece | Where |
