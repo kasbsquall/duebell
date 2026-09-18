@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
+import { internal } from "./_generated/api";
 import { internalMutation, type MutationCtx } from "./_generated/server";
 import { extractReference } from "./lib/reference";
 
@@ -67,7 +68,7 @@ export const onMessageReceived = internalMutation({
     if (!claim.emailThreadId) {
       await ctx.db.patch("claims", claim._id, { emailThreadId: msg.threadId });
     }
-    await ctx.db.insert("claimEvents", {
+    const replyEventId = await ctx.db.insert("claimEvents", {
       claimId: claim._id,
       kind: "reply_received",
       detail: msg.text.trim().slice(0, MAX_REPLY_CHARS) || "(empty message)",
@@ -75,6 +76,7 @@ export const onMessageReceived = internalMutation({
       subject: msg.subject,
       messageId: msg.messageId,
     });
+    await ctx.scheduler.runAfter(0, internal.classify.classifyReply, { replyEventId });
     return null;
   },
 });

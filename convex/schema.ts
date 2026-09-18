@@ -41,6 +41,12 @@ export default defineSchema({
     from: v.optional(v.string()),
     subject: v.optional(v.string()),
     messageId: v.optional(v.string()),
+    // Set on "classified" events
+    replyEventId: v.optional(v.id("claimEvents")),
+    verdict: v.optional(v.union(v.literal("commitment"), v.literal("stalling"), v.literal("resolved"))),
+    confidence: v.optional(v.number()),
+    evidenceQuote: v.optional(v.string()),
+    missing: v.optional(v.array(v.string())),
   })
     .index("by_claimId", ["claimId"])
     .index("by_messageId", ["messageId"]),

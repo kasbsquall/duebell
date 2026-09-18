@@ -9,9 +9,11 @@
  */
 
 import type * as claims from "../claims.js";
+import type * as classify from "../classify.js";
 import type * as http from "../http.js";
 import type * as inbound from "../inbound.js";
 import type * as lib_businessDays from "../lib/businessDays.js";
+import type * as lib_classification from "../lib/classification.js";
 import type * as lib_reference from "../lib/reference.js";
 import type * as probe from "../probe.js";
 
@@ -23,9 +25,11 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   claims: typeof claims;
+  classify: typeof classify;
   http: typeof http;
   inbound: typeof inbound;
   "lib/businessDays": typeof lib_businessDays;
+  "lib/classification": typeof lib_classification;
   "lib/reference": typeof lib_reference;
   probe: typeof probe;
 }>;
