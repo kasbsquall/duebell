@@ -3,16 +3,16 @@
 - **Project:** Duebell
 - **Event:** Convex All Gas Hackathon
 - **What it does:** Holds companies in Peru to the 15 business day legal deadline for answering consumer complaints: it counts the clock, reads company replies, flags non-answers, and drafts the Indecopi filing.
-- **Live app:** https://doting-lyrebird-179.convex.site
+- **Live app:** https://sleek-grouse-640.convex.site
 - **Repo:** https://github.com/kasbsquall/duebell
 - **Frontend:** Convex static hosting
-- **Convex deployment:** https://doting-lyrebird-179.convex.cloud
+- **Convex deployment:** https://sleek-grouse-640.convex.cloud
 - **Components:** @agentmail/convex, @convex-dev/static-hosting
 - **Convex features:** schema, indexes, queries, mutations, actions, internal functions, HTTP actions, scheduled functions, realtime queries
 - **Auth:** none
 - **AI models:** gpt-5.4-mini-2026-03-17
 - **Started:** 2026-09-18T13:25:00Z
-- **Last updated:** 2026-09-18T14:40:00Z
+- **Last updated:** 2026-09-18T15:05:00Z
 
 ## Log
 
@@ -39,3 +39,6 @@ Rebranded as Duebell and moved all product copy to English. Indecopi offense nam
 
 ### 2026-09-18 - working tree
 Added the README, the design system, and this build log (`README.md`, `docs/design-system.md`). Repository published on GitHub.
+
+### 2026-09-18 - production
+Deployed backend and frontend to the production Convex deployment with its own signed AgentMail webhook. Verified end to end on production: a real reply sent to the case inbox was routed to its claim and classified as stalling (0.98), and the Firecrawl sanctions lookup returned the company's record with English offense labels.
