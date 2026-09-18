@@ -6,7 +6,7 @@ import type { Id } from "../../convex/_generated/dataModel";
 
 const DEMO_CLAIM = {
   companyName: "Saga Falabella",
-  summary: "I returned a jacket on September 2 and the PEN 389 refund never reached my card.",
+  summary: "I returned a jacket and the PEN 389 refund never reached my card.",
 };
 
 interface NewClaimProps {

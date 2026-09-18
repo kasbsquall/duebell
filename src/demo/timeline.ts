@@ -4,21 +4,24 @@
 
 export type ChapterId = "filed" | "record" | "reply" | "verdict" | "deadline" | "filing";
 
+export type Maker = "convex" | "firecrawl" | "agentmail" | "openai" | "duebell";
+
 export interface Chapter {
   id: ChapterId;
   start: number;
   end: number;
   label: string;
   via: string;
+  maker: Maker;
 }
 
 export const CHAPTERS: readonly Chapter[] = [
-  { id: "filed", start: 0, end: 5, label: "Complaint filed", via: "Convex scheduler" },
-  { id: "record", start: 5, end: 12.5, label: "Company record", via: "Firecrawl" },
-  { id: "reply", start: 12.5, end: 19, label: "Reply arrives", via: "AgentMail" },
-  { id: "verdict", start: 19, end: 27.5, label: "Reply read", via: "OpenAI" },
-  { id: "deadline", start: 27.5, end: 34.5, label: "Deadline", via: "Convex scheduler" },
-  { id: "filing", start: 34.5, end: 44, label: "Filing drafted", via: "Duebell" },
+  { id: "filed", start: 0, end: 5, label: "Complaint filed", via: "Convex scheduler", maker: "convex" },
+  { id: "record", start: 5, end: 12.5, label: "Company record", via: "Firecrawl", maker: "firecrawl" },
+  { id: "reply", start: 12.5, end: 19, label: "Reply arrives", via: "AgentMail", maker: "agentmail" },
+  { id: "verdict", start: 19, end: 27.5, label: "Reply read", via: "OpenAI", maker: "openai" },
+  { id: "deadline", start: 27.5, end: 34.5, label: "Deadline", via: "Convex scheduler", maker: "convex" },
+  { id: "filing", start: 34.5, end: 44, label: "Filing drafted", via: "Duebell", maker: "duebell" },
 ];
 
 export const DURATION = CHAPTERS[CHAPTERS.length - 1].end;

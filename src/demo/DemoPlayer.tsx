@@ -1,5 +1,6 @@
 import {
   ArrowCounterClockwise,
+  Check,
   EnvelopeSimple,
   FileText,
   Gavel,
@@ -11,6 +12,7 @@ import {
   type Icon,
 } from "@phosphor-icons/react";
 import { useState } from "react";
+import { MakerLogo } from "../components/MakerLogo";
 import type { Lang } from "../lib/draft";
 import { formatDate } from "../lib/format";
 import { addBusinessDays } from "../../convex/lib/businessDays";
@@ -37,7 +39,7 @@ const ICONS: Record<ChapterId, Icon> = {
 
 export function DemoPlayer() {
   const { t, playing, seek, toggle, restart } = usePlayhead(DURATION);
-  const [lang, setLang] = useState<Lang>("es");
+  const [lang, setLang] = useState<Lang>("en");
   const chapter = chapterAt(t);
   const lt = t - chapter.start;
   const total = CASE.deadlineBusinessDays;
@@ -59,12 +61,22 @@ export function DemoPlayer() {
                   onClick={() => seek(c.start + 0.001)}
                   aria-current={state === "now" ? "step" : undefined}
                 >
-                  <span className="rail__num num">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="rail__num num">
+                    {state === "done" ? (
+                      <span className="rail__check" aria-label="Done">
+                        <Check size={11} weight="bold" aria-hidden />
+                      </span>
+                    ) : (
+                      String(i + 1).padStart(2, "0")
+                    )}
+                  </span>
                   <span className="rail__label">
                     <Glyph size={16} weight="light" aria-hidden />
                     {c.label}
                   </span>
-                  <span className="rail__via">via {c.via}</span>
+                  <span className="rail__via">
+                    <MakerLogo maker={c.maker} /> {c.via}
+                  </span>
                   <span className="rail__fill" style={{ transform: `scaleX(${fill})` }} aria-hidden />
                 </button>
               </li>

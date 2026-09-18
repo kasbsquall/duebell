@@ -11,7 +11,7 @@ interface NextStepProps {
 
 export function NextStep({ claim }: NextStepProps) {
   const [copied, setCopied] = useState(false);
-  const [lang, setLang] = useState<Lang>("es");
+  const [lang, setLang] = useState<Lang>("en");
 
   async function copyFiling() {
     try {
@@ -40,11 +40,11 @@ export function NextStep({ claim }: NextStepProps) {
       </p>
       <div className="next__draftbox">
         <div className="next__langs" role="group" aria-label="Filing language">
+          <button className={lang === "en" ? "is-on" : ""} aria-pressed={lang === "en"} onClick={() => setLang("en")}>
+            English · to read
+          </button>
           <button className={lang === "es" ? "is-on" : ""} aria-pressed={lang === "es"} onClick={() => setLang("es")}>
             Spanish · what you file
-          </button>
-          <button className={lang === "en" ? "is-on" : ""} aria-pressed={lang === "en"} onClick={() => setLang("en")}>
-            English · for reference
           </button>
         </div>
         <pre className="next__draft" lang={lang}>

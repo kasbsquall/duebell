@@ -240,11 +240,11 @@ export function FilingScene({ lt, lang, onLang }: FilingProps) {
           <Gavel size={16} weight="light" aria-hidden /> Ready for Indecopi, Peru's consumer agency
         </p>
         <div className="seg" role="group" aria-label="Filing language">
-          <button className={lang === "es" ? "is-on" : ""} aria-pressed={lang === "es"} onClick={() => onLang("es")}>
-            Spanish · filed
-          </button>
           <button className={lang === "en" ? "is-on" : ""} aria-pressed={lang === "en"} onClick={() => onLang("en")}>
             English
+          </button>
+          <button className={lang === "es" ? "is-on" : ""} aria-pressed={lang === "es"} onClick={() => onLang("es")}>
+            Spanish · what you file
           </button>
         </div>
       </div>

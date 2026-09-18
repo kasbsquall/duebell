@@ -98,6 +98,10 @@
   color: var(--paper-raised);
   font-weight: 600;
   text-decoration: none;
+  border: 0;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
   box-shadow: 0 14px 30px -18px oklch(30% 0.03 60 / 0.7);
   transition: transform 150ms var(--ease-out);
 }
@@ -1044,4 +1048,69 @@
     transform: scaleX(1);
     opacity: 0;
   }
+}
+
+/* ---------- Maker logos, done steps ---------- */
+.maker-logo {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  margin-right: 5px;
+  vertical-align: -2px;
+  object-fit: contain;
+}
+
+.rail__check {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.rail__step--done {
+  background: color-mix(in oklch, var(--ink) 7%, var(--paper-raised));
+}
+
+.rail__step--done .rail__fill {
+  height: 3px;
+}
+
+/* ---------- Glossary ---------- */
+.glossary {
+  margin: 96px 0 64px;
+}
+
+.glossary__title {
+  margin: 0 0 20px;
+  font-size: var(--text-lg, 1.25rem);
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+.glossary__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1px;
+  margin: 0;
+  background: color-mix(in oklch, var(--ink) 8%, transparent);
+}
+
+.glossary__item {
+  padding: 16px 18px;
+  background: var(--paper);
+}
+
+.glossary__item dt {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.glossary__item dd {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--ink-2, var(--ink-3));
+  text-wrap: pretty;
 }

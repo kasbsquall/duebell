@@ -34,6 +34,14 @@ const STEPS = [
   },
 ];
 
+const GLOSSARY: readonly [string, string][] = [
+  ["Indecopi", "Peru's national consumer protection agency. It receives consumer filings and can sanction companies."],
+  ["Libro de Reclamaciones", "The complaint book every business in Peru must offer, online or in store. Filing there starts the legal clock."],
+  ["15 business days", "The time a company has to answer a complaint. Weekends and national holidays do not count."],
+  ["Saga Falabella", "A large Peruvian department store chain. It is the company in the recorded case."],
+  ["UIT", "Peru's tax reference unit. Indecopi states its fines in UIT."],
+];
+
 export function DemoPage() {
   return (
     <div className="home">
@@ -49,9 +57,13 @@ export function DemoPage() {
               <ArrowUpRight size={16} weight="light" />
             </span>
           </a>
-          <a className="cta cta--ghost" href="#how">
+          <button
+            type="button"
+            className="cta cta--ghost"
+            onClick={() => document.getElementById("how")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+          >
             How it works
-          </a>
+          </button>
         </div>
         <ul className="outcome" aria-label="What happened in the recorded case">
           <li>
@@ -89,6 +101,19 @@ export function DemoPage() {
             </li>
           ))}
         </ol>
+      </section>
+      <section className="glossary" aria-labelledby="glossary-heading">
+        <h2 id="glossary-heading" className="glossary__title">
+          New to Peru's consumer system? The terms on this page
+        </h2>
+        <dl className="glossary__list">
+          {GLOSSARY.map(([term, def]) => (
+            <div key={term} className="glossary__item">
+              <dt>{term}</dt>
+              <dd>{def}</dd>
+            </div>
+          ))}
+        </dl>
       </section>
     </div>
   );
