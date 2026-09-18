@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as claims from "../claims.js";
+import type * as lib_businessDays from "../lib/businessDays.js";
 import type * as probe from "../probe.js";
 
 import type {
@@ -17,6 +19,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  claims: typeof claims;
+  "lib/businessDays": typeof lib_businessDays;
   probe: typeof probe;
 }>;
 
