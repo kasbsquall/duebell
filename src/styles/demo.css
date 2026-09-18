@@ -1237,3 +1237,8 @@
     padding-top: 0;
   }
 }
+
+.transport__btn.is-on {
+  background: oklch(100% 0 0 / 0.12);
+  color: oklch(98% 0.01 85);
+}

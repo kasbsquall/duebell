@@ -10,6 +10,8 @@ import {
   Play,
   Scales,
   type Icon,
+  SpeakerHigh,
+  SpeakerSlash,
 } from "@phosphor-icons/react";
 import { useState } from "react";
 import { MakerLogo } from "../components/MakerLogo";
@@ -26,6 +28,7 @@ import {
   VerdictScene,
 } from "./DemoCards";
 import { CHAPTERS, DURATION, chapterAt, dayAt, formatClock, ramp, type ChapterId } from "./timeline";
+import { useNarration } from "./useNarration";
 import { usePlayhead } from "./usePlayhead";
 
 const ICONS: Record<ChapterId, Icon> = {
@@ -38,9 +41,20 @@ const ICONS: Record<ChapterId, Icon> = {
 };
 
 export function DemoPlayer() {
-  const { t, playing, seek, toggle, restart } = usePlayhead(DURATION);
+  const { t, playing, seek: rawSeek, toggle, restart: rawRestart } = usePlayhead(DURATION);
   const [lang, setLang] = useState<Lang>("en");
+  const [sound, setSound] = useState(false);
+  const [seekKey, setSeekKey] = useState(0);
+  const seek = (to: number) => {
+    rawSeek(to);
+    setSeekKey((k) => k + 1);
+  };
+  const restart = () => {
+    rawRestart();
+    setSeekKey((k) => k + 1);
+  };
   const chapter = chapterAt(t);
+  useNarration(chapter, t, playing, sound, seekKey);
   const lt = t - chapter.start;
   const total = CASE.deadlineBusinessDays;
   const day = dayAt(t, total);
@@ -120,6 +134,15 @@ export function DemoPlayer() {
               </button>
               <button className="transport__btn" onClick={restart} aria-label="Restart replay">
                 <ArrowCounterClockwise size={18} weight="light" />
+              </button>
+              <button
+                className={`transport__btn${sound ? " is-on" : ""}`}
+                onClick={() => setSound((v) => !v)}
+                aria-pressed={sound}
+                aria-label={sound ? "Mute narration" : "Play narration"}
+                title={sound ? "Mute narration" : "Listen to what happens in each step"}
+              >
+                {sound ? <SpeakerHigh size={18} weight="light" /> : <SpeakerSlash size={18} weight="light" />}
               </button>
               <div className="transport__track" aria-hidden>
                 <span style={{ transform: `scaleX(${t / DURATION})` }} />
