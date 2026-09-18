@@ -1,0 +1,41 @@
+# Hackathon log
+
+- **Project:** Duebell
+- **Event:** Convex All Gas Hackathon
+- **What it does:** Holds companies in Peru to the 15 business day legal deadline for answering consumer complaints: it counts the clock, reads company replies, flags non-answers, and drafts the Indecopi filing.
+- **Live app:** https://doting-lyrebird-179.convex.site
+- **Repo:** https://github.com/kasbsquall/duebell
+- **Frontend:** Convex static hosting
+- **Convex deployment:** https://doting-lyrebird-179.convex.cloud
+- **Components:** @agentmail/convex, @convex-dev/static-hosting
+- **Convex features:** schema, indexes, queries, mutations, actions, internal functions, HTTP actions, scheduled functions, realtime queries
+- **Auth:** none
+- **AI models:** gpt-5.4-mini-2026-03-17
+- **Started:** 2026-09-18T13:25:00Z
+- **Last updated:** 2026-09-18T14:40:00Z
+
+## Log
+
+### 2026-09-18 - 421b21a
+Scaffolded a Vite + React + TypeScript app on Convex. Proved the riskiest dependency first: Firecrawl browser actions can search Indecopi's public sanctions registry and open a company's detail page, which is a JavaScript app with no public API (`convex/probe.ts`, later removed).
+
+### 2026-09-18 - 46b18f2
+Built the legal clock. Business days are counted in Lima time from the day after filing, skipping weekends and Peruvian national holidays. Creating a claim schedules a function at the end of the deadline day that marks it overdue if no real answer arrived. Added a demo control that moves a claim forward in business days. Convex features: schema, indexes, mutations, queries, scheduled functions (`convex/claims.ts`, `convex/lib/businessDays.ts`, `convex/schema.ts`). 15 tests.
+
+### 2026-09-18 - d658cc1
+Company replies now arrive by email. The AgentMail component verifies the signed webhook and stores the event; the HTTP action then routes the message to its claim by thread or by a short reference code in the subject, and drops duplicates by message id. Round trip proven with real replies sent from a personal mail client to the case inbox. Convex features: HTTP actions, registered component, internal mutations (`convex/http.ts`, `convex/inbound.ts`, `convex/lib/reference.ts`).
+
+### 2026-09-18 - 885cc5a
+Every reply is classified by OpenAI with a strict JSON schema: real commitment, resolved, or stalling, plus confidence, the sentence it relied on, a plain-English reason, and what a real answer still lacks. The quoted sentence is checked against the original email and discarded if it does not appear. Status updates follow, except that a missed deadline stays missed unless the company actually resolves the case. Convex features: actions, internal queries and mutations, scheduler (`convex/classify.ts`, `convex/lib/classification.ts`).
+
+### 2026-09-18 - dac78c5
+Creating a claim now starts a background Firecrawl lookup of the company's sanction record: total sanctions, fines, period, recent cases, and how many are about complaint handling. The registry's result order is unstable, so the best match is ranked against the name the user typed and alternatives are kept for a one-click correction. Parsers are tested against captured registry output (`convex/sanctions.ts`, `convex/lib/sanctions.ts`).
+
+### 2026-09-18 - 0eaddde
+Shipped the claim dashboard: deadline clock with a strip of 15 business-day ticks, live sanctions card, reply verdict with the quoted sentence, reply channel with a "Reply as the company" test button, next-step panel, and case timeline. Everything updates through realtime queries. Published on Convex static hosting with app-owned root routing so the webhook URL did not move. Removed the probe action because it exposed Firecrawl calls publicly (`src/`, `convex/http.ts`, `convex/convex.config.ts`).
+
+### 2026-09-18 - 430a222
+Rebranded as Duebell and moved all product copy to English. Indecopi offense names are translated to English by OpenAI during the lookup, and the Indecopi filing stays in Spanish (as required) with an English reference version one click away. Added the ledger-paper texture and the bell isotype (`src/components/Logo.tsx`, `convex/lib/translate.ts`, `src/components/NextStep.tsx`).
+
+### 2026-09-18 - working tree
+Added the README, the design system, and this build log (`README.md`, `docs/design-system.md`). Repository published on GitHub.
