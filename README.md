@@ -34,7 +34,7 @@ Everything updates live in the browser through Convex queries.
 
 - OpenAI answers with a strict JSON schema: verdict, confidence, the sentence it relied on, a reason, and what a real answer still lacks.
 - The quoted sentence is checked against the original email before it is shown. A quote that does not appear in the reply is discarded (`convex/lib/classification.ts`).
-- The model never moves the clock. Deadlines are computed in TypeScript from Lima business days, and a missed deadline stays missed unless the company actually resolves the case.
+- The model never moves the clock. Deadlines are computed in TypeScript from Lima business days, and a missed deadline stays missed. A reply never closes a claim by itself: when the company says it is fixed, the user confirms it.
 - Offense names from Indecopi are translated for display only; the Spanish original is kept.
 - OpenAI calls run through the Convex action-retrier (3 attempts with backoff). If all fail, the claim records that the reply was not analyzed instead of waiting forever.
 

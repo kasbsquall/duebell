@@ -75,6 +75,7 @@ describe("statusForVerdict", () => {
   test("maps verdicts to claim statuses", () => {
     expect(statusForVerdict("commitment")).toBe("committed");
     expect(statusForVerdict("stalling")).toBe("stalling");
-    expect(statusForVerdict("resolved")).toBe("resolved");
+    // An email alone never closes a claim; the user confirms with markResolved.
+    expect(statusForVerdict("resolved")).toBe("committed");
   });
 });

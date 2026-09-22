@@ -53,7 +53,9 @@ export function parseClassification(modelOutput: string, reply: string): Classif
   };
 }
 
-export function statusForVerdict(verdict: Verdict): ClaimStatusFromVerdict {
-  if (verdict === "commitment") return "committed";
-  return verdict;
+// Only the user closes a claim. Anyone who knows a reference code can email the inbox, so a
+// reply that says "resolved" moves the claim to committed and waits for the user to confirm.
+export function statusForVerdict(verdict: Verdict): Exclude<ClaimStatusFromVerdict, "resolved"> {
+  if (verdict === "stalling") return "stalling";
+  return "committed";
 }

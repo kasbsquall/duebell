@@ -80,6 +80,15 @@
   color: var(--ink-3);
 }
 
+.hero__scope {
+  grid-column: 1 / -1;
+  max-width: 68ch;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
 .hero__actions {
   display: flex;
   flex-wrap: wrap;

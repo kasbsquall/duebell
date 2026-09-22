@@ -66,3 +66,6 @@ AgentMail now sends as well as receives. From a claim, the user can email the co
 
 ### 2026-09-18 - letter delivery fix
 A real send in production showed that @agentmail/convex 0.1.0 reads the API key inside the component, where Convex does not expose the app's environment variables, so letters queued in its outbox never left. Letters now go straight to the AgentMail send API from an app action run by the action-retrier; the result sets the letter to sent or failed, and the new thread id is stored on the claim so the company's answer is routed back even without the reference. The component still verifies and stores inbound webhooks. Two new tests cover the sent and failed paths; 59 tests pass (`convex/outbound.ts`).
+
+### 2026-09-21 - only the user closes a claim
+A code review pointed out that anyone who knows a claim's reference can email the inbox, so a forged "it is resolved" reply could have closed someone else's claim. A reply classified as resolved now moves the claim to committed and asks the user to confirm with "The company fixed it"; an overdue claim stays overdue whatever the reply says (`convex/lib/classification.ts`, `convex/classify.ts`, `src/components/VerdictCard.tsx`).

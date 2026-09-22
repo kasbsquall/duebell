@@ -80,6 +80,9 @@ export function VerdictCard({ classification, reply, isClassifying, analysisFail
       )}
 
       <p className="verdict__reason">{classification.detail}</p>
+      {classification.verdict === "resolved" && (
+        <p className="hint">The company says it is fixed. Only you can close the claim: if it is true, use "The company fixed it" above.</p>
+      )}
 
       {classification.missing && classification.missing.length > 0 && (
         <div className="verdict__missing">

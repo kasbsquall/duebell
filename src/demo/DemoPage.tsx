@@ -70,6 +70,10 @@ export function DemoPage() {
             How it works
           </button>
         </div>
+        <p className="hero__scope">
+          Starting with Peru. The deadline, holidays, sanctions registry and filing format are country rules kept apart
+          from the rest, so the same inbox, reply check and scheduled deadline work anywhere a law sets a time to answer.
+        </p>
         <ul className="outcome" aria-label="What happened in the recorded case">
           <li>
             <Scales size={18} weight="light" aria-hidden />

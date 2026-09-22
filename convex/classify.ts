@@ -129,10 +129,9 @@ export const applyClassification = internalMutation({
       missing: args.missing,
     });
 
-    // A missed deadline stays missed; only an actual resolution closes an overdue claim.
+    // A missed deadline stays missed, and only the user marks a claim resolved.
     const next = statusForVerdict(args.verdict);
-    if (claim.status === "resolved") return null;
-    if (claim.status === "overdue" && next !== "resolved") return null;
+    if (claim.status === "resolved" || claim.status === "overdue") return null;
     await ctx.db.patch("claims", claim._id, { status: next });
     return null;
   },
