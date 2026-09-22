@@ -97,6 +97,27 @@ describe("outbound.sendLetter", () => {
     expect(claim!.emailThreadId).toBe("t-1");
   });
 
+  test("a retry finds the letter already sent by its label and does not send it again", async () => {
+    const calls: string[] = [];
+    vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {
+      calls.push(`${init?.method ?? "GET"} ${url}`);
+      if (String(url).includes("api.agentmail.to")) {
+        return new Response(JSON.stringify({ messages: [{ message_id: "m-9", thread_id: "t-9" }] }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      }
+      throw new Error("network disabled in tests");
+    }));
+    const { t, claimId } = await withClaim();
+    await t.mutation(api.outbound.sendLetter, { claimId, to: "a@b.pe", confirmed: true });
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
+    const [letter] = await t.query(api.outbound.letters, { claimId });
+    expect(letter.status).toBe("sent");
+    expect(calls.some((c) => c.startsWith("POST") && c.includes("/messages/send"))).toBe(false);
+    expect(calls.some((c) => c.includes("labels=duebell-letter-"))).toBe(true);
+  });
+
   test("marks the letter failed after the retrier gives up", async () => {
     const { t, claimId } = await withClaim();
     await t.mutation(api.outbound.sendLetter, { claimId, to: "a@b.pe", confirmed: true });
@@ -182,5 +203,20 @@ describe("reply analysis with retries", () => {
     expect(reply.analysisRunId).toBeDefined();
     const failed = log.find((e) => e.kind === "analysis_failed");
     expect(failed?.replyEventId).toBe(reply._id);
+  });
+});
+
+describe("sanctions lookup with a retry", () => {
+  test("Firecrawl is tried twice, then the record is marked failed", async () => {
+    const firecrawl = vi.fn(async () => {
+      throw new Error("firecrawl down");
+    });
+    vi.stubGlobal("fetch", firecrawl);
+    const { t, claimId } = await withClaim();
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
+    const claim = await t.query(api.claims.get, { claimId });
+    expect(claim!.sanctions?.status).toBe("failed");
+    expect(claim!.sanctions?.error).toMatch(/firecrawl down/);
+    expect(firecrawl).toHaveBeenCalledTimes(2);
   });
 });

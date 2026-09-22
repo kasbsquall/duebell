@@ -37,6 +37,8 @@ Everything updates live in the browser through Convex queries.
 - The model never moves the clock. Deadlines are computed in TypeScript from Lima business days, and a missed deadline stays missed. A reply never closes a claim by itself: when the company says it is fixed, the user confirms it.
 - Offense names from Indecopi are translated for display only; the Spanish original is kept.
 - OpenAI calls run through the Convex action-retrier (3 attempts with backoff). If all fail, the claim records that the reply was not analyzed instead of waiting forever.
+- The Firecrawl registry lookup gets one retry after 10 seconds through the same component, then shows a failure the user can retry.
+- Letters cannot go out twice. AgentMail has no idempotency key, so each letter carries a unique label and every attempt first checks whether a message with that label was already sent.
 
 ## Guarding the paid calls
 

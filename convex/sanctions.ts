@@ -1,9 +1,11 @@
+import { onCompleteValidator } from "@convex-dev/action-retrier";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { internalAction, internalMutation, mutation, type MutationCtx } from "./_generated/server";
 import { enforceLimit, rateLimiter } from "./lib/limits";
 import { requireOwnClaim } from "./lib/owner";
+import { registryRetrier } from "./lib/retrier";
 import { parseSanctionsDetail, parseSearchResults, pickBestMatch } from "./lib/sanctions";
 import { translateOffenses } from "./lib/translate";
 
@@ -66,8 +68,14 @@ export async function startSanctionsLookup(ctx: MutationCtx, claimId: Id<"claims
     });
     return;
   }
-  await ctx.db.insert("sanctionChecks", { claimId, status: "pending", query });
-  await ctx.scheduler.runAfter(0, internal.sanctions.lookup, { claimId, query });
+  const checkId = await ctx.db.insert("sanctionChecks", { claimId, status: "pending", query });
+  const lookupRunId = await registryRetrier.run(
+    ctx,
+    internal.sanctions.lookup,
+    { claimId, query },
+    { onComplete: internal.sanctions.onLookupComplete },
+  );
+  await ctx.db.patch("sanctionChecks", checkId, { lookupRunId });
 }
 
 // Re-runs the lookup, optionally pinning the company by RUC when the name matched the wrong one.
@@ -90,7 +98,9 @@ export const lookup = internalAction({
   args: { claimId: v.id("claims"), query: v.string() },
   returns: v.null(),
   handler: async (ctx, { claimId, query }) => {
-    try {
+    // Errors propagate so the registry retrier can try once more; onLookupComplete records a
+    // final failure.
+    {
       const results = parseSearchResults(await scrapePortal(query, false));
       if (results.length === 0) {
         await ctx.runMutation(internal.sanctions.saveResult, { claimId, status: "clean" });
@@ -111,13 +121,23 @@ export const lookup = internalAction({
         candidates: results.slice(0, 5),
         complaintHandlingCount: detail.recent.filter((s) => s.offense.includes("ATENCION DE RECLAMOS")).length,
       });
-    } catch (error) {
-      await ctx.runMutation(internal.sanctions.saveResult, {
-        claimId,
-        status: "failed",
-        error: error instanceof Error ? error.message.slice(0, 300) : "Unknown error",
-      });
     }
+    return null;
+  },
+});
+
+export const onLookupComplete = internalMutation({
+  args: onCompleteValidator,
+  returns: v.null(),
+  handler: async (ctx, { runId, result }) => {
+    if (result.type === "success") return null;
+    const check = await ctx.db
+      .query("sanctionChecks")
+      .withIndex("by_lookupRunId", (q) => q.eq("lookupRunId", runId))
+      .first();
+    if (!check || check.status !== "pending") return null;
+    const error = result.type === "failed" ? result.error.slice(0, 300) : "Canceled";
+    await ctx.db.patch("sanctionChecks", check._id, { status: "failed", error });
     return null;
   },
 });

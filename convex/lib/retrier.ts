@@ -7,3 +7,10 @@ export const retrier = new ActionRetrier(components.actionRetrier, {
   base: 2,
   maxFailures: 3,
 });
+
+// Firecrawl browser sessions are the most expensive call: one retry, after 10 seconds.
+export const registryRetrier = new ActionRetrier(components.actionRetrier, {
+  initialBackoffMs: 10_000,
+  base: 2,
+  maxFailures: 1,
+});

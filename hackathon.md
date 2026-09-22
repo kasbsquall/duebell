@@ -69,3 +69,6 @@ A real send in production showed that @agentmail/convex 0.1.0 reads the API key 
 
 ### 2026-09-21 - only the user closes a claim
 A code review pointed out that anyone who knows a claim's reference can email the inbox, so a forged "it is resolved" reply could have closed someone else's claim. A reply classified as resolved now moves the claim to committed and asks the user to confirm with "The company fixed it"; an overdue claim stays overdue whatever the reply says (`convex/lib/classification.ts`, `convex/classify.ts`, `src/components/VerdictCard.tsx`).
+
+### 2026-09-21 - no double letters, retried registry lookup
+The code review also found that a letter retried after a timeout could be sent twice. The AgentMail send API documents no idempotency key, so each letter now carries a unique label and every attempt first lists the inbox's messages with that label; if the letter already went out, its ids are reused instead of sending again. The Firecrawl registry lookup, which used to record a failure on the first error, now runs through the action-retrier with one retry after 10 seconds (kept to one because each attempt is a paid browser session). Two new tests cover both; 61 tests pass (`convex/outbound.ts`, `convex/sanctions.ts`, `convex/lib/retrier.ts`).

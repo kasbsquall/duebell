@@ -51,7 +51,10 @@ export default defineSchema({
     complaintHandlingCount: v.optional(v.number()),
     candidates: v.optional(v.array(v.object({ legalName: v.string(), ruc: v.string() }))),
     error: v.optional(v.string()),
-  }).index("by_claimId", ["claimId"]),
+    lookupRunId: v.optional(v.string()), // action-retrier run of the Firecrawl lookup
+  })
+    .index("by_claimId", ["claimId"])
+    .index("by_lookupRunId", ["lookupRunId"]),
 
   claims: defineTable({
     ownerId: v.optional(v.id("users")), // Convex Auth user who filed it

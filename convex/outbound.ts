@@ -9,6 +9,11 @@ import { retrier } from "./lib/retrier";
 
 const AGENTMAIL_API = "https://api.agentmail.to/v0";
 
+// AgentMail has no idempotency key, so each letter carries a unique label. Before every
+// attempt we look for a message with that label; a retry after a timeout finds the letter
+// that already went out instead of sending it twice.
+export const letterLabel = (eventId: string) => `duebell-letter-${eventId}`;
+
 // Emails the written follow-up to the company from Duebell's inbox. The user types the
 // address and confirms; nothing is sent without that. Replies come back to the same inbox
 // on the same thread, with the reference in the subject, so the webhook files them here.
@@ -78,13 +83,25 @@ export const deliverLetter = internalAction({
       summary: claim.summary,
       overdue: claim.status === "overdue",
     };
-    const res = await fetch(`${AGENTMAIL_API}/inboxes/${encodeURIComponent(inbox)}/messages/send`, {
+    const base = `${AGENTMAIL_API}/inboxes/${encodeURIComponent(inbox)}/messages`;
+    const auth = { Authorization: `Bearer ${process.env.AGENTMAIL_API_KEY}` };
+    const label = letterLabel(eventId);
+
+    const existing = await fetch(`${base}?labels=${encodeURIComponent(label)}&limit=1`, { headers: auth });
+    if (!existing.ok) throw new Error(`AgentMail lookup failed (${existing.status})`);
+    const found = ((await existing.json()) as { messages?: { message_id?: string; thread_id?: string }[] })
+      .messages?.[0];
+    if (found?.message_id && found.thread_id) return { messageId: found.message_id, threadId: found.thread_id };
+
+    const res = await fetch(`${base}/send`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.AGENTMAIL_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ to: event.to, subject: letterSubject(input), text: buildLetter(input, "es") }),
+      headers: { ...auth, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to: event.to,
+        subject: letterSubject(input),
+        text: buildLetter(input, "es"),
+        labels: [label],
+      }),
     });
     if (!res.ok) throw new Error(`AgentMail send failed (${res.status}): ${(await res.text()).slice(0, 200)}`);
     const body = (await res.json()) as { message_id?: string; thread_id?: string };
